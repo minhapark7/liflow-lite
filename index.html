@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>LIFLOW</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LIFLOW">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #ffffff; --bg-sub: #f8f8f8; --text: #1a1a1a; --text-sub: #888888;
+    --text-light: #b0b0b0; --border: #f0f0f0; --chip-bg: #f5f5f5;
+    --chip-active-bg: #1a1a1a; --chip-active-text: #ffffff; --accent: #1a1a1a;
+    --check: #22c55e; --danger: #ef4444; --overlay: rgba(0,0,0,0.3);
+    --radius: 16px; --radius-sm: 10px;
+  }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--bg); color: var(--text); max-width: 390px; margin: 0 auto;
+    min-height: 100dvh; position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+  }
+  .screen {
+    position: absolute; inset: 0; background: var(--bg);
+    overflow-y: auto; overflow-x: hidden;
+    transition: transform 0.4s cubic-bezier(0.32,0.72,0,1), opacity 0.4s ease;
+    will-change: transform, opacity;
+  }
+  .screen.hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
+  .screen.hidden-left { transform: translateX(-30%); opacity: 0; pointer-events: none; }
+  .nav-bar {
+    display: flex; align-items: center; padding: 56px 20px 12px;
+    position: sticky; top: 0; background: var(--bg); z-index: 10; gap: 8px;
+  }
+  .nav-back, .nav-action {
+    width: 36px; height: 36px; border: none; background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%;
+    transition: background 0.2s; flex-shrink: 0; color: var(--text);
+  }
+  .nav-back:active, .nav-action:active { background: var(--chip-bg); }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title { font-size: 17px; font-weight: 600; flex: 1; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+
+  /* HOME */
+  .home-header { padding: 56px 24px 0; }
+  .home-greeting { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+  .home-quote { font-size: 20px; font-weight: 700; line-height: 1.45; letter-spacing: -0.5px; }
+  .home-date { font-size: 13px; color: var(--text-light); margin-top: 8px; }
+  .home-section-title { font-size: 14px; font-weight: 600; color: var(--text-sub); padding: 28px 24px 12px; }
+  .routine-cards { padding: 0 24px 0; display: flex; flex-direction: column; gap: 12px; }
+  .routine-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; cursor: pointer; transition: all 0.2s ease; animation: fadeUp 0.35s ease both;
+  }
+  .routine-card:active { transform: scale(0.98); }
+  .routine-card.disabled { opacity: 0.45; }
+  .routine-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .routine-card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .routine-card-meta { font-size: 12px; color: var(--text-sub); margin-top: 3px; display: flex; gap: 8px; align-items: center; }
+  .routine-card-meta span { display: flex; align-items: center; gap: 3px; }
+  .routine-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .routine-card-icons { display: flex; gap: 4px; font-size: 18px; flex-wrap: wrap; }
+  .routine-card-play {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff;
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .routine-card-play:active { transform: scale(0.9); }
+  .routine-card-play svg { width: 18px; height: 18px; margin-left: 2px; }
+  .home-header-row { display: flex; align-items: center; gap: 16px; }
+  .home-header-text { flex: 1; }
+  .character-wrap { position: relative; flex-shrink: 0; }
+  .home-character {
+    width: 88px; height: 88px; object-fit: contain; flex-shrink: 0; border-radius: 16px;
+    animation: charBreathe 3s ease-in-out infinite;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+  @keyframes charBreathe {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.04); }
+  }
+  .home-character.bounce {
+    animation: charBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both !important;
+  }
+  @keyframes charBounce {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-14px) scale(1.05); }
+    50% { transform: translateY(0) scale(0.95); }
+    70% { transform: translateY(-6px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .home-character.celebrate {
+    animation: charCelebrate 1.4s ease both !important;
+  }
+  @keyframes charCelebrate {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    10% { transform: translateY(-18px) rotate(-6deg) scale(1.1); }
+    20% { transform: translateY(0) rotate(6deg) scale(1); }
+    30% { transform: translateY(-14px) rotate(-4deg) scale(1.08); }
+    40% { transform: translateY(0) rotate(4deg) scale(1); }
+    50% { transform: translateY(-10px) rotate(-2deg) scale(1.05); }
+    60% { transform: translateY(0) rotate(2deg) scale(1); }
+    75% { transform: translateY(-5px) rotate(0deg) scale(1.02); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+  }
+
+  /* Particles */
+  .particle-container { position: absolute; inset: -20px; pointer-events: none; z-index: 15; overflow: visible; }
+  .particle {
+    position: absolute; opacity: 0; left: 50%; top: 50%;
+    animation: particleFly 0.9s ease-out forwards;
+  }
+  @keyframes particleFly {
+    0% { opacity: 1; transform: translate(0,0) scale(0.3); }
+    60% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(1); }
+  }
+
+  /* Mood Modal */
+  .mood-overlay {
+    position: fixed; inset: 0; background: var(--overlay); z-index: 200;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mood-overlay.show { opacity: 1; pointer-events: auto; }
+  .mood-modal {
+    background: var(--bg); border-radius: 24px; width: calc(100% - 48px); max-width: 342px;
+    padding: 28px 24px; transform: scale(0.9) translateY(20px);
+    transition: all 0.35s cubic-bezier(0.32,0.72,0,1);
+  }
+  .mood-overlay.show .mood-modal { transform: scale(1) translateY(0); }
+  .mood-modal-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .mood-modal-sub { font-size: 13px; color: var(--text-sub); text-align: center; margin-bottom: 24px; }
+  .mood-label { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 10px; }
+  .mood-options { display: flex; gap: 8px; margin-bottom: 20px; }
+  .mood-option {
+    flex: 1; padding: 14px 8px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: transparent; cursor: pointer; transition: all 0.2s; text-align: center; font-family: inherit;
+  }
+  .mood-option:active { transform: scale(0.96); }
+  .mood-option.selected { border-color: var(--accent); background: var(--chip-bg); }
+  .mood-option .mood-emoji { font-size: 28px; display: block; margin-bottom: 4px; }
+  .mood-option .mood-text { font-size: 12px; font-weight: 500; color: var(--text-sub); }
+  .mood-submit {
+    width: 100%; padding: 14px; border-radius: var(--radius); background: var(--accent);
+    color: #fff; border: none; font-size: 15px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; margin-top: 4px;
+  }
+  .mood-submit:active { transform: scale(0.98); }
+  .mood-submit:disabled { opacity: 0.3; pointer-events: none; }
+  .mood-result { animation: fadeUp 0.35s ease both; margin-top: 4px; }
+  .mood-result-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 2px; }
+  .mood-result-msg { font-size: 13px; color: var(--text-sub); text-align: center; margin-bottom: 16px; line-height: 1.5; }
+  .mood-result-tasks {
+    background: var(--bg-sub); border-radius: var(--radius-sm); padding: 12px 16px;
+    margin-bottom: 16px; max-height: 200px; overflow-y: auto;
+  }
+  .mood-result-task { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; color: var(--text-sub); }
+  .mood-result-task .mr-emoji { font-size: 18px; width: 24px; text-align: center; }
+  .mood-result-task .mr-time { color: var(--text-light); font-size: 11px; margin-left: auto; }
+  .mood-result-btns { display: flex; gap: 10px; }
+  .mood-result-btns button {
+    flex: 1; padding: 14px; border-radius: var(--radius); font-size: 15px;
+    font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; border: none;
+  }
+  .mood-result-btns button:active { transform: scale(0.98); }
+  .mood-btn-close { background: var(--chip-bg); color: var(--text); }
+  .mood-btn-start { background: var(--accent); color: #fff; }
+  .home-empty { text-align: center; padding: 80px 24px; color: var(--text-light); font-size: 14px; line-height: 1.6; }
+  .home-empty .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .recommend-section { padding: 0 24px 120px; display: flex; flex-direction: column; gap: 10px; }
+  .recommend-card {
+    background: var(--bg-sub); border-radius: var(--radius); padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    animation: fadeUp 0.35s ease both;
+  }
+  .recommend-card-info { flex: 1; min-width: 0; }
+  .recommend-card-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .recommend-card-meta { font-size: 12px; color: var(--text-light); }
+  .recommend-add-btn {
+    padding: 8px 16px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: transparent; font-size: 12px;
+    font-weight: 600; font-family: inherit; color: var(--accent); cursor: pointer;
+    transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+  }
+  .recommend-add-btn:active { background: var(--chip-bg); transform: scale(0.96); }
+  .recommend-add-btn.added { border-color: var(--check); color: var(--check); }
+  .fab {
+    position: fixed; bottom: 32px; right: max(24px, calc(50% - 171px));
+    width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #fff;
+    border: none; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 20;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  /* CREATE */
+  .create-body { padding: 8px 24px 100px; }
+  .form-section { margin-bottom: 28px; animation: fadeUp 0.35s ease both; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 10px; display: block; }
+  .text-input {
+    width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 14px 16px; font-size: 15px; font-family: inherit; outline: none;
+    transition: border-color 0.2s; background: var(--bg); color: var(--text);
+  }
+  .text-input:focus { border-color: var(--accent); }
+  .text-input::placeholder { color: var(--text-light); }
+  .day-toggles { display: flex; gap: 6px; margin-top: 12px; animation: fadeUp 0.25s ease; }
+  .day-toggle {
+    width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border);
+    background: transparent; font-size: 13px; font-weight: 500; color: var(--text-sub);
+    cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;
+  }
+  .day-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cycle-chips { display: flex; gap: 8px; }
+  .cycle-chip {
+    padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    background: var(--chip-bg); color: var(--text-sub); border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .cycle-chip.active { background: var(--chip-active-bg); color: var(--chip-active-text); }
+  .time-picker { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 4px; }
+  .time-input {
+    width: 72px; text-align: center; font-size: 28px; font-weight: 600;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 0; outline: none; font-family: inherit; color: var(--text);
+    background: var(--bg); transition: border-color 0.2s;
+  }
+  .time-input:focus { border-color: var(--accent); }
+  .time-sep { font-size: 28px; font-weight: 600; color: var(--text-light); }
+  .ampm-toggle {
+    padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s;
+  }
+  .ampm-toggle:active { background: var(--chip-bg); }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; margin-bottom: 14px; }
+  .toggle-row-label { font-size: 15px; font-weight: 500; }
+  .toggle-switch {
+    width: 48px; height: 28px; border-radius: 14px; background: #ddd; border: none;
+    cursor: pointer; position: relative; transition: background 0.25s ease; flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--check); }
+  .toggle-switch::after {
+    content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px; transition: transform 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle-switch.on::after { transform: translateX(20px); }
+  .sub-toggle-group { display: flex; gap: 8px; margin-bottom: 14px; }
+  .sub-toggle {
+    flex: 1; padding: 10px 0; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: transparent; font-size: 13px; font-weight: 500; color: var(--text-sub);
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .sub-toggle.active { border-color: var(--accent); color: var(--text); background: var(--chip-bg); }
+  .notif-detail { background: var(--bg-sub); border-radius: var(--radius-sm); padding: 16px; display: flex; flex-direction: column; gap: 12px; animation: fadeUp 0.25s ease; }
+  .notif-detail .text-input { background: var(--bg); }
+  .notif-row { display: flex; justify-content: space-between; align-items: center; }
+  .notif-row-label { font-size: 13px; color: var(--text-sub); }
+  .bottom-btn {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 390px; padding: 12px 24px calc(env(safe-area-inset-bottom,0px) + 20px);
+    background: var(--bg); border-top: 1px solid var(--border); z-index: 15;
+  }
+  .btn-primary {
+    width: 100%; padding: 16px; border: none; border-radius: var(--radius);
+    background: var(--accent); color: #fff; font-size: 16px; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.3; pointer-events: none; }
+
+  /* DETAIL */
+  .detail-body { padding: 8px 24px 100px; }
+  .detail-task-item {
+    display: flex; align-items: center; gap: 14px; padding: 16px 0;
+    border-bottom: 1px solid var(--border); animation: fadeUp 0.3s ease both;
+    cursor: pointer; transition: opacity 0.2s, transform 0.15s, background 0.15s;
+    position: relative; user-select: none;
+  }
+  .detail-task-item:last-child { border-bottom: none; }
+  .detail-task-item:active { opacity: 0.7; }
+  .detail-task-item.dragging {
+    opacity: 0.9; z-index: 100; background: var(--bg);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12); border-radius: var(--radius-sm);
+    border-bottom: none; position: fixed; left: 24px; right: 24px; width: auto;
+    pointer-events: none; padding: 16px;
+  }
+  .detail-task-item.drag-placeholder {
+    opacity: 0; height: 0; padding: 0; margin: 0; border: none; overflow: hidden;
+  }
+  .detail-task-num {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--chip-bg);
+    font-size: 12px; font-weight: 600; color: var(--text-sub);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .detail-task-emoji { font-size: 24px; flex-shrink: 0; }
+  .detail-task-info { flex: 1; min-width: 0; }
+  .detail-task-title { font-size: 15px; font-weight: 500; }
+  .detail-task-time { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .detail-task-check {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid #d0d0d0;
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; cursor: pointer; transition: all 0.25s ease;
+  }
+  .detail-task-check.done { border-color: var(--check); background: var(--check); }
+  .detail-task-check svg { opacity: 0; transform: scale(0.5); transition: all 0.25s ease; }
+  .detail-task-check.done svg { opacity: 1; transform: scale(1); }
+  .detail-task-item.done .detail-task-title { color: var(--text-light); text-decoration: line-through; }
+  .detail-task-item.done .detail-task-time { opacity: 0.5; }
+  .detail-empty { text-align: center; padding: 60px 0; color: var(--text-light); font-size: 14px; line-height: 1.6; }
+  .detail-empty .icon { font-size: 36px; margin-bottom: 8px; opacity: 0.4; }
+  .drop-indicator {
+    height: 3px; background: var(--accent); border-radius: 2px; margin: -2px 0;
+    transition: opacity 0.15s; opacity: 0;
+  }
+  .drop-indicator.visible { opacity: 1; }
+
+  /* Detail bottom bar */
+  .detail-bottom-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 390px; padding: 12px 24px calc(env(safe-area-inset-bottom,0px) + 16px);
+    display: flex; gap: 12px; align-items: center;
+    z-index: 15; pointer-events: none;
+  }
+  .detail-start-btn {
+    flex: 1; height: 56px; padding: 0 28px; border-radius: 28px;
+    background: var(--accent); color: #fff; border: none;
+    font-size: 15px; font-weight: 600; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: all 0.2s; pointer-events: auto;
+  }
+  .detail-start-btn:active { transform: scale(0.96); }
+  .detail-start-btn svg { width: 18px; height: 18px; }
+  .detail-add-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--accent); color: #fff; border: none;
+    font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: all 0.2s; flex-shrink: 0; pointer-events: auto;
+  }
+  .detail-add-btn:active { transform: scale(0.92); }
+
+  /* TASK EDIT */
+  .edit-task-body { padding: 8px 24px 100px; }
+  .edit-emoji-area { display: flex; justify-content: center; padding: 20px 0 28px; animation: scaleIn 0.3s ease; }
+  .edit-emoji-btn {
+    width: 80px; height: 80px; border-radius: 20px; background: var(--chip-bg);
+    border: 2px dashed var(--border); font-size: 40px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: all 0.2s; position: relative;
+  }
+  .edit-emoji-btn:active { transform: scale(0.95); }
+  .edit-emoji-hint { position: absolute; bottom: -20px; font-size: 11px; color: var(--text-light); white-space: nowrap; }
+
+  /* Scroll Picker */
+  .scroll-picker-row {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .scroll-picker-col { display: flex; flex-direction: column; align-items: center; }
+  .scroll-picker-label { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; font-weight: 500; }
+  .scroll-picker {
+    width: 72px; height: 140px; position: relative; overflow: hidden;
+    border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  }
+  .scroll-picker-inner {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 50px 0;
+    overflow-y: scroll; height: 100%;
+    scroll-snap-type: y mandatory;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .scroll-picker-inner::-webkit-scrollbar { display: none; }
+  .scroll-picker-item {
+    height: 40px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 600; color: var(--text-light);
+    scroll-snap-align: center; transition: color 0.15s, transform 0.15s;
+    font-variant-numeric: tabular-nums; cursor: pointer;
+  }
+  .scroll-picker-item.selected { color: var(--text); transform: scale(1.1); }
+  .scroll-picker-highlight {
+    position: absolute; top: 50px; left: 6px; right: 6px; height: 40px;
+    background: var(--chip-bg); border-radius: 8px; pointer-events: none;
+  }
+  .scroll-picker-unit { font-size: 14px; font-weight: 500; color: var(--text-sub); margin-left: 2px; margin-top: 60px; }
+
+  .edit-actions {
+    display: flex; gap: 10px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border);
+  }
+  .edit-action-btn {
+    flex: 1; padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: transparent; font-size: 14px; font-weight: 500; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .edit-action-btn:active { background: var(--chip-bg); }
+  .edit-action-btn.danger { color: var(--danger); border-color: #fecaca; }
+  .bottom-btn-row { display: flex; gap: 10px; }
+  .bottom-btn-row .btn-secondary {
+    flex: 1; padding: 16px; border: 1.5px solid var(--border); border-radius: var(--radius);
+    background: var(--bg); color: var(--text); font-size: 16px; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: all 0.2s;
+  }
+  .bottom-btn-row .btn-secondary:active { background: var(--chip-bg); }
+  .bottom-btn-row .btn-primary { flex: 1; }
+
+  /* PLAY - Routinery style */
+  .play-screen { display: flex; flex-direction: column; min-height: 100dvh; }
+  .play-top {
+    padding: 0 24px; text-align: center;
+  }
+  .play-task-title-main { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .play-time-range { font-size: 14px; color: var(--text-sub); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .play-timer-area {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px 12px;
+  }
+  .play-timer-ring {
+    width: 220px; height: 220px; position: relative; margin-bottom: 16px;
+  }
+  .play-timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .play-timer-ring .bg { stroke: var(--border); }
+  .play-timer-ring .fg { stroke: var(--accent); transition: stroke-dashoffset 1s linear; stroke-linecap: round; }
+  .play-timer-ring .fg.overtime { stroke: var(--danger); }
+  .play-timer-text {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .play-timer-emoji { font-size: 48px; margin-bottom: 8px; }
+  .play-time {
+    font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -1px;
+  }
+  .play-time.overtime { color: var(--danger); }
+  .play-time-label { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+  /* Play controls - 3 buttons */
+  .play-controls {
+    display: flex; gap: 20px; align-items: center; justify-content: center; padding: 8px 24px 20px;
+  }
+  .play-btn {
+    border: none; border-radius: 50%; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .play-btn:active { transform: scale(0.9); }
+  .play-btn-side {
+    width: 52px; height: 52px; background: var(--chip-bg); color: var(--text-sub);
+  }
+  .play-btn-side svg { width: 22px; height: 22px; }
+  .play-btn-center {
+    width: 68px; height: 68px; background: var(--accent); color: #fff;
+  }
+  .play-btn-center svg { width: 28px; height: 28px; }
+
+  /* Play bottom info */
+  .play-bottom-info {
+    padding: 16px 24px calc(env(safe-area-inset-bottom,0px) + 24px);
+    text-align: center; border-top: 1px solid var(--border);
+  }
+  .play-next-label { font-size: 14px; color: var(--text-sub); margin-bottom: 4px; }
+  .play-next-label strong { color: var(--text); font-weight: 600; }
+  .play-end-time { font-size: 12px; color: var(--text-light); font-variant-numeric: tabular-nums; }
+
+  /* SHEETS */
+  .overlay { position: fixed; inset: 0; background: var(--overlay); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .bottom-sheet {
+    position: fixed; bottom: 0; left: 50%; transform: translate(-50%,100%);
+    width: 100%; max-width: 390px; max-height: 80dvh; background: var(--bg);
+    border-radius: 20px 20px 0 0; z-index: 110;
+    transition: transform 0.4s cubic-bezier(0.32,0.72,0,1); display: flex; flex-direction: column;
+  }
+  .bottom-sheet.show { transform: translate(-50%,0); }
+  .sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
+  .sheet-header { padding: 16px 24px 12px; flex-shrink: 0; }
+  .sheet-header h2 { font-size: 17px; font-weight: 600; }
+  .chips { display: flex; gap: 8px; padding: 0 24px 14px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    background: var(--chip-bg); color: var(--text-sub); border: none; cursor: pointer;
+    white-space: nowrap; transition: all 0.25s ease; flex-shrink: 0;
+  }
+  .chip.active { background: var(--chip-active-bg); color: var(--chip-active-text); }
+  .task-list { padding: 0 24px 32px; overflow-y: auto; flex: 1; overscroll-behavior: contain; }
+  .task-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .task-item:last-child { border-bottom: none; }
+  .task-icon { font-size: 22px; flex-shrink: 0; width: 32px; text-align: center; }
+  .task-info { flex: 1; min-width: 0; }
+  .task-title { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .task-title .time { font-size: 11px; color: var(--text-light); font-weight: 400; }
+  .task-desc { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+  .task-add {
+    width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border);
+    background: transparent; color: var(--text-sub); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;
+  }
+  .task-add:active { transform: scale(0.88); }
+  .task-add.added { border-color: var(--check); color: var(--check); background: #f0fdf4; }
+
+  /* Custom add row in sheet */
+  .custom-add-row {
+    display: flex; gap: 10px; padding: 12px 24px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .custom-add-row input {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 20px;
+    padding: 10px 16px; font-size: 14px; font-family: inherit; outline: none;
+    background: var(--bg); color: var(--text); transition: border-color 0.2s;
+  }
+  .custom-add-row input:focus { border-color: var(--accent); }
+  .custom-add-row input::placeholder { color: var(--text-light); }
+  .custom-add-row button {
+    padding: 10px 16px; border-radius: 20px; background: var(--accent); color: #fff;
+    border: none; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+    white-space: nowrap; transition: all 0.2s;
+  }
+  .custom-add-row button:active { opacity: 0.8; }
+
+  /* Menu Sheet */
+  .menu-sheet-item {
+    display: flex; align-items: center; gap: 14px; padding: 16px 24px;
+    border: none; background: transparent; font-size: 15px; font-family: inherit;
+    cursor: pointer; width: 100%; text-align: left; transition: background 0.15s; color: var(--text);
+  }
+  .menu-sheet-item:active { background: var(--chip-bg); }
+  .menu-sheet-item .menu-icon {
+    width: 36px; height: 36px; border-radius: 10px; background: var(--chip-bg);
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .menu-sheet-item.danger { color: var(--danger); }
+  .menu-sheet-item.danger .menu-icon { background: #fef2f2; }
+
+  /* Emoji Picker */
+  .emoji-picker-overlay {
+    position: fixed; inset: 0; background: var(--overlay); z-index: 200;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .emoji-picker-overlay.show { opacity: 1; pointer-events: auto; }
+  .emoji-picker {
+    background: var(--bg); border-radius: 20px 20px 0 0; width: 100%; max-width: 390px;
+    max-height: 60dvh; padding: 16px; transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.32,0.72,0,1); display: flex; flex-direction: column;
+  }
+  .emoji-picker-overlay.show .emoji-picker { transform: translateY(0); }
+  .emoji-picker-title { font-size: 15px; font-weight: 600; text-align: center; padding: 4px 0 12px; }
+  .emoji-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; overflow-y: auto; flex: 1; }
+  .emoji-grid button {
+    width: 100%; aspect-ratio: 1; border: none; background: transparent; font-size: 26px;
+    cursor: pointer; border-radius: 10px; transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .emoji-grid button:active { background: var(--chip-bg); }
+
+  /* Done */
+  .done-overlay {
+    position: fixed; inset: 0; background: var(--bg); z-index: 200;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+  }
+  .done-overlay.show { opacity: 1; pointer-events: auto; }
+  .done-emoji { font-size: 56px; margin-bottom: 16px; animation: fadeUp 0.5s ease; }
+  .done-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; animation: fadeUp 0.5s ease 0.1s both; }
+  .done-desc { font-size: 14px; color: var(--text-sub); animation: fadeUp 0.5s ease 0.2s both; margin-bottom: 32px; }
+  .done-btn {
+    padding: 14px 40px; border-radius: var(--radius); background: var(--accent); color: #fff;
+    border: none; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+    animation: fadeUp 0.5s ease 0.3s both; transition: all 0.2s;
+  }
+  .done-btn:active { transform: scale(0.96); }
+  .toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--accent); color: #fff; padding: 10px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none;
+    transition: all 0.3s ease; z-index: 300; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="screen" id="screenHome">
+  <div class="home-header">
+    <div class="home-header-row">
+      <div class="home-header-text">
+        <div class="home-greeting" id="homeGreeting"></div>
+        <div class="home-quote" id="homeQuote"></div>
+      </div>
+      <div class="character-wrap">
+        <img class="home-character" id="homeCharacter" src="character.png" alt="" onerror="this.parentElement.style.display='none'" onclick="onCharacterTap()">
+        <div class="particle-container" id="charParticles"></div>
+      </div>
+    </div>
+    <div class="home-date" id="homeDate"></div>
+  </div>
+  <div class="home-section-title" id="homeSectionTitle">내 루틴</div>
+  <div class="routine-cards" id="routineCards"></div>
+  <div class="home-section-title" id="recommendSectionTitle">추천 루틴</div>
+  <div class="recommend-section" id="recommendSection"></div>
+  <button class="fab" id="homeFab" onclick="navigateTo('create')">+</button>
+</div>
+
+<div class="screen hidden" id="screenCreate">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goBackFromCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title" id="createTitle">새 루틴</span>
+  </div>
+  <div class="create-body">
+    <div class="form-section" style="animation-delay:0.05s">
+      <label class="form-label">루틴 이름</label>
+      <input class="text-input" id="inputTitle" placeholder="예: 아침 루틴" maxlength="30">
+    </div>
+    <div class="form-section" style="animation-delay:0.1s">
+      <label class="form-label">반복</label>
+      <div class="cycle-chips" id="cycleChips"></div>
+      <div id="dayTogglesWrap"></div>
+    </div>
+    <div class="form-section" style="animation-delay:0.15s">
+      <label class="form-label">시작 시간</label>
+      <div class="time-picker">
+        <input class="time-input" id="inputHour" type="text" value="07" maxlength="2" inputmode="numeric">
+        <span class="time-sep">:</span>
+        <input class="time-input" id="inputMin" type="text" value="00" maxlength="2" inputmode="numeric">
+        <button class="ampm-toggle" id="ampmToggle" onclick="toggleAmPm()">AM</button>
+      </div>
+    </div>
+    <div class="form-section" style="animation-delay:0.2s">
+      <label class="form-label">알림</label>
+      <div class="toggle-row">
+        <span class="toggle-row-label">알림 받기</span>
+        <button class="toggle-switch" id="notifToggle" onclick="toggleNotif()"></button>
+      </div>
+      <div id="notifDetail" style="display:none;">
+        <div class="sub-toggle-group">
+          <button class="sub-toggle active" data-ntype="push" onclick="switchNotifType('push')">푸시</button>
+          <button class="sub-toggle" data-ntype="alarm" onclick="switchNotifType('alarm')">알람</button>
+        </div>
+        <div id="notifPush" class="notif-detail">
+          <input class="text-input" id="inputNotifMsg" placeholder="알림 문구 (예: 루틴 시작할 시간이에요!)">
+          <div class="notif-row">
+            <span class="notif-row-label">빈도</span>
+            <div class="sub-toggle-group" style="margin:0;gap:6px;">
+              <button class="sub-toggle active" data-freq="every" onclick="switchFreq('every')" style="flex:none;padding:6px 14px;font-size:12px;">매번</button>
+              <button class="sub-toggle" data-freq="once" onclick="switchFreq('once')" style="flex:none;padding:6px 14px;font-size:12px;">1회</button>
+            </div>
+          </div>
+          <div class="notif-row"><span class="notif-row-label">알림음</span><span style="font-size:13px;color:var(--text-sub);">기본</span></div>
+        </div>
+        <div id="notifAlarm" style="display:none;" class="notif-detail">
+          <div class="sub-toggle-group" style="margin:0;">
+            <button class="sub-toggle active" data-alarm="vibrate" onclick="switchAlarm('vibrate')">진동</button>
+            <button class="sub-toggle" data-alarm="sound" onclick="switchAlarm('sound')">소리</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-btn"><button class="btn-primary" onclick="saveRoutine()">완료</button></div>
+</div>
+
+<div class="screen hidden" id="screenDetail">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="navigateTo('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title" id="detailTitle"></span>
+    <button class="nav-action" onclick="openMenuSheet()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="10" r="2"/></svg>
+    </button>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+  <div class="detail-bottom-bar" id="detailBottomBar">
+    <button class="detail-start-btn" onclick="startFromDetail()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      시작하기
+    </button>
+    <button class="detail-add-btn" onclick="openDetailTaskSheet()">+</button>
+  </div>
+</div>
+
+<div class="screen hidden" id="screenTaskEdit">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goBackFromTaskEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title">행동 수정</span>
+  </div>
+  <div class="edit-task-body" id="editTaskBody"></div>
+  <div class="bottom-btn">
+    <div class="bottom-btn-row">
+      <button class="btn-secondary" onclick="goBackFromTaskEdit()">취소</button>
+      <button class="btn-primary" onclick="saveTaskEdit()">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen hidden" id="screenPlay">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="stopRoutine()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title" id="playNavTitle">루틴 실행</span>
+  </div>
+  <div class="play-screen">
+    <div class="play-top">
+      <div class="play-task-title-main" id="playTaskTitle"></div>
+      <div class="play-time-range" id="playTimeRange"></div>
+    </div>
+    <div class="play-timer-area">
+      <div class="play-timer-ring">
+        <svg viewBox="0 0 220 220">
+          <circle class="bg" cx="110" cy="110" r="96" fill="none" stroke-width="6"/>
+          <circle class="fg" id="timerCircle" cx="110" cy="110" r="96" fill="none" stroke-width="6" stroke-dasharray="603" stroke-dashoffset="0"/>
+        </svg>
+        <div class="play-timer-text">
+          <div class="play-timer-emoji" id="playEmoji"></div>
+          <div class="play-time" id="playTime">00:00</div>
+          <div class="play-time-label" id="playTimeLabel">남은 시간</div>
+        </div>
+      </div>
+    </div>
+    <div class="play-controls">
+      <button class="play-btn play-btn-side" onclick="togglePlay()">
+        <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
+        <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="play-btn play-btn-center" onclick="completeCurrentTask()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+      </button>
+      <button class="play-btn play-btn-side" onclick="playNext()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm10-12v12h2V6h-2z"/></svg>
+      </button>
+    </div>
+    <div class="play-bottom-info" id="playBottomInfo">
+      <div class="play-next-label" id="playNextLabel"></div>
+      <div class="play-end-time" id="playEndTime"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
+<div class="bottom-sheet" id="taskSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header"><h2>행동 추가</h2></div>
+  <div class="custom-add-row">
+    <input id="customTaskInput" placeholder="새 할 일 입력하기" maxlength="30">
+    <button onclick="addCustomTask()">추가</button>
+  </div>
+  <div class="chips" id="taskChips"></div>
+  <div class="task-list" id="taskPickerList"></div>
+</div>
+
+<div class="overlay" id="menuOverlay" onclick="closeMenuSheet()"></div>
+<div class="bottom-sheet" id="menuSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header"><h2>루틴 옵션</h2></div>
+  <div id="menuSheetBody"></div>
+</div>
+
+<div class="emoji-picker-overlay" id="emojiOverlay" onclick="closeEmojiPicker()">
+  <div class="emoji-picker" onclick="event.stopPropagation()">
+    <div class="emoji-picker-title">이모지 선택</div>
+    <div class="emoji-grid" id="emojiGrid"></div>
+  </div>
+</div>
+
+<div class="done-overlay" id="doneOverlay">
+  <div class="done-emoji">🎉</div>
+  <div class="done-title">루틴 완료!</div>
+  <div class="done-desc" id="doneDesc"></div>
+  <button class="done-btn" onclick="closeDone()">홈으로</button>
+</div>
+<div class="mood-overlay" id="moodOverlay" onclick="closeMoodModal()">
+  <div class="mood-modal" onclick="event.stopPropagation()">
+    <div id="moodSelectView">
+      <div class="mood-modal-title">오늘 기분이 어때요?</div>
+      <div class="mood-modal-sub">기분과 에너지에 맞는 루틴을 추천해 드릴게요</div>
+      <div class="mood-label">기분</div>
+      <div class="mood-options" id="moodOptions">
+        <button class="mood-option" data-mood="good" onclick="selectMood('good')"><span class="mood-emoji">😊</span><span class="mood-text">좋음</span></button>
+        <button class="mood-option" data-mood="normal" onclick="selectMood('normal')"><span class="mood-emoji">😐</span><span class="mood-text">보통</span></button>
+        <button class="mood-option" data-mood="tired" onclick="selectMood('tired')"><span class="mood-emoji">😔</span><span class="mood-text">피곤함</span></button>
+      </div>
+      <div class="mood-label">에너지</div>
+      <div class="mood-options" id="energyOptions">
+        <button class="mood-option" data-energy="high" onclick="selectEnergy('high')"><span class="mood-emoji">🔥</span><span class="mood-text">높음</span></button>
+        <button class="mood-option" data-energy="mid" onclick="selectEnergy('mid')"><span class="mood-emoji">⚡</span><span class="mood-text">보통</span></button>
+        <button class="mood-option" data-energy="low" onclick="selectEnergy('low')"><span class="mood-emoji">🌙</span><span class="mood-text">낮음</span></button>
+      </div>
+      <button class="mood-submit" id="moodSubmit" disabled onclick="submitMoodRecommend()">추천받기</button>
+    </div>
+    <div id="moodResultView" style="display:none"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TASKS = {
+  아침: [
+    {emoji:"💧",title:"물 마시기",time:1,desc:"하루의 시작, 한 잔의 물"},
+    {emoji:"🛏️",title:"잠자리 정리",time:1,desc:"깔끔한 침대로 기분 전환"},
+    {emoji:"⚖️",title:"체중 확인",time:1,desc:"오늘의 몸 상태 체크"},
+    {emoji:"🧘",title:"명상",time:12,desc:"고요한 마음으로 시작하기"},
+    {emoji:"🍳",title:"식사 준비",time:15,desc:"건강한 아침 한 끼 준비"},
+    {emoji:"🥣",title:"아침 식사",time:15,desc:"천천히 맛있게 먹기"},
+    {emoji:"📋",title:"오늘 일정 확인",time:10,desc:"하루 계획 한눈에 보기"},
+    {emoji:"🎯",title:"목표 생각",time:5,desc:"오늘 가장 중요한 한 가지"},
+    {emoji:"☕",title:"커피/차 마시기",time:5,desc:"여유로운 한 모금"},
+    {emoji:"💊",title:"약/비타민 먹기",time:1,desc:"건강을 위한 작은 습관"},
+    {emoji:"🪥",title:"양치질",time:3,desc:"상쾌한 아침의 시작"},
+    {emoji:"🧴",title:"스킨케어",time:3,desc:"피부에 수분 충전"},
+    {emoji:"💄",title:"화장",time:10,desc:"나를 위한 아침 준비"},
+    {emoji:"👕",title:"옷 갈아입기",time:5,desc:"오늘의 스타일 완성"},
+    {emoji:"✨",title:"영감 받기",time:5,desc:"좋은 글이나 영상으로 충전"},
+    {emoji:"📖",title:"독서",time:30,desc:"아침 독서로 하루 시작"},
+    {emoji:"🔄",title:"다음 습관 준비",time:1,desc:"다음 행동을 위한 세팅"},
+    {emoji:"🚿",title:"샤워",time:15,desc:"따뜻한 물로 잠 깨기"},
+  ],
+  저녁: [
+    {emoji:"📴",title:"전자기기 종료",time:1,desc:"눈과 마음의 휴식"},
+    {emoji:"🧘‍♀️",title:"취침 명상",time:12,desc:"편안한 잠을 위한 마음 정리"},
+    {emoji:"🍽️",title:"저녁 식사",time:30,desc:"하루를 마무리하는 식사"},
+    {emoji:"🫧",title:"설거지",time:15,desc:"깨끗한 주방으로 마무리"},
+    {emoji:"📝",title:"일기",time:10,desc:"오늘 하루 기록하기"},
+    {emoji:"👔",title:"내일 옷 준비",time:5,desc:"아침을 가볍게 시작하는 방법"},
+    {emoji:"🗓️",title:"내일 일정 확인",time:10,desc:"내일의 나를 위한 준비"},
+    {emoji:"🚿",title:"샤워",time:15,desc:"따뜻한 물로 긴장 풀기"},
+    {emoji:"🧴",title:"스킨케어",time:3,desc:"피부에 수분 충전"},
+    {emoji:"📖",title:"독서",time:15,desc:"잠들기 전 가벼운 독서"},
+    {emoji:"🤸",title:"스트레칭",time:5,desc:"하루의 긴장 풀어주기"},
+    {emoji:"🧘",title:"명상",time:10,desc:"고요한 마음으로 마무리"},
+    {emoji:"🌙",title:"오늘 하루 돌아보기",time:5,desc:"오늘 어떤 하루였나요?"},
+    {emoji:"🍵",title:"자기 전 차 마시기",time:5,desc:"따뜻한 차로 마음 진정"},
+    {emoji:"🏠",title:"물건 제자리에 두기",time:5,desc:"정돈된 공간으로 하루 마무리"},
+  ],
+  운동: [
+    {emoji:"🚴",title:"자전거",time:30,desc:"바람을 가르며 페달 밟기"},
+    {emoji:"🏋️",title:"웨이트 트레이닝",time:30,desc:"근력 키우기"},
+    {emoji:"💪",title:"맨몸운동",time:15,desc:"어디서든 할 수 있는 운동"},
+    {emoji:"🤸",title:"스트레칭",time:10,desc:"몸을 부드럽게 풀어주기"},
+    {emoji:"🏃",title:"달리기",time:30,desc:"기분 전환에 최고"},
+    {emoji:"🧘‍♂️",title:"요가",time:20,desc:"몸과 마음의 균형"},
+    {emoji:"🚶",title:"산책",time:40,desc:"천천히 걸으며 생각 정리"},
+    {emoji:"🏅",title:"운동",time:15,desc:"오늘의 운동 루틴"},
+    {emoji:"🔄",title:"다음 습관 준비",time:1,desc:"다음 행동을 위한 세팅"},
+  ],
+  공부: [
+    {emoji:"🧹",title:"책상 정리",time:1,desc:"깨끗한 공간, 맑은 머리"},
+    {emoji:"🎧",title:"집중",time:50,desc:"몰입하는 시간"},
+    {emoji:"☕",title:"휴식",time:10,desc:"잠깐 쉬어가기"},
+    {emoji:"🤸",title:"스트레칭",time:10,desc:"굳은 몸 풀어주기"},
+    {emoji:"📖",title:"복습",time:30,desc:"배운 것을 내 것으로"},
+    {emoji:"📚",title:"예습",time:30,desc:"다음을 위한 준비"},
+    {emoji:"💡",title:"조명 조절하기",time:1,desc:"집중하기 좋은 환경 만들기"},
+    {emoji:"📋",title:"공부 일정 짜기",time:1,desc:"오늘 공부할 내용 정리"},
+    {emoji:"😴",title:"긴 휴식",time:30,desc:"충분히 쉬고 다시 시작"},
+    {emoji:"🌤️",title:"하늘 보기",time:2,desc:"잠깐 올려다보는 여유"},
+  ],
+  여유: [
+    {emoji:"📝",title:"일기 쓰기",time:20,desc:"나만의 이야기 기록"},
+    {emoji:"🌤️",title:"하늘 보기",time:2,desc:"잠깐 올려다보는 여유"},
+    {emoji:"🌙",title:"하루 돌아보기",time:5,desc:"오늘 어떤 하루였나요?"},
+    {emoji:"😌",title:"아무것도 안 하기",time:30,desc:"가장 어려운 루틴"},
+    {emoji:"🧘",title:"명상",time:20,desc:"고요함 속에 머물기"},
+    {emoji:"🙏",title:"감사하기",time:2,desc:"작은 것에 감사하는 시간"},
+    {emoji:"🌬️",title:"심호흡하기",time:3,desc:"깊게 들이마시고 내쉬기"},
+    {emoji:"💬",title:"오늘의 기분 적어보기",time:2,desc:"지금 기분을 적어보세요"},
+    {emoji:"👀",title:"먼 곳 바라보기",time:2,desc:"눈의 피로를 풀어주세요"},
+    {emoji:"💎",title:"나를 위한 작은 투자하기",time:10,desc:"나에게 의미 있는 시간"},
+    {emoji:"🚶",title:"천천히 걷기",time:20,desc:"천천히 걸으며 생각 정리"},
+    {emoji:"🔥",title:"몰입하기",time:10,desc:"좋아하는 것에 집중"},
+    {emoji:"🧘‍♀️",title:"혼자만의 시간 보내기",time:20,desc:"온전히 나만의 시간"},
+    {emoji:"🏠",title:"나만의 공간 만들기",time:30,desc:"편안한 공간 꾸미기"},
+    {emoji:"📞",title:"전화하기",time:10,desc:"소중한 사람에게 연락"},
+    {emoji:"🧹",title:"주변 정리하기",time:10,desc:"깔끔한 공간, 맑은 마음"},
+  ],
+};
+const EMOJIS = ["💧","🛏️","⚖️","🧘","🍳","🥣","📋","🎯","☕","📴","🍽️","🫧","📝","👔","🗓️","🚿","🧴","🚴","🏋️","💪","🤸","🏃","🚶","🧹","🎧","📖","📚","🌤️","🌙","😌","🙏","🌬️","💬","🎨","🎵","🎮","📱","💻","🖊️","📸","🌱","🌊","🔥","⭐","💎","🦋","🐻","🌈","🍀","🍎","🍕","🎂","🏠","🚗","✈️","🎒","👟","🧢","🕶️","🎭","🧩","🎲","🏆","🎯","💡","🔔","❤️","💜","💛","🩵"];
+const QUOTES = [
+  "작은 루틴이\n큰 변화를 만들어요","오늘도 한 걸음씩\n꾸준히 나아가요",
+  "지금 이 순간이\n가장 좋은 시작이에요","매일의 반복이\n나를 성장시켜요",
+  "완벽하지 않아도\n괜찮아요, 시작이 중요해요","어제보다 나은 오늘을\n만들어 가요",
+  "좋은 습관은\n좋은 하루를 만들어요","나를 위한 시간,\n루틴으로 시작해요",
+];
+const RECOMMEND_ROUTINES = [
+  {
+    title: "평온해지는 루틴",
+    tasks: [
+      {emoji:"🧘",title:"명상",time:10,hours:0,minutes:10,seconds:0,desc:"고요한 마음으로 시작하기",autoNext:false},
+      {emoji:"🧘‍♂️",title:"요가",time:50,hours:0,minutes:50,seconds:0,desc:"몸과 마음의 균형",autoNext:false},
+      {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"따뜻한 물로 긴장 풀기",autoNext:false},
+      {emoji:"💬",title:"오늘의 기분 적어보기",time:2,hours:0,minutes:2,seconds:0,desc:"지금 기분을 적어보세요",autoNext:false},
+      {emoji:"🚶",title:"천천히 걷기",time:20,hours:0,minutes:20,seconds:0,desc:"천천히 걸으며 생각 정리",autoNext:false},
+    ]
+  },
+  {
+    title: "상쾌한 아침 루틴",
+    tasks: [
+      {emoji:"💧",title:"물 마시기",time:1,hours:0,minutes:1,seconds:0,desc:"하루의 시작, 한 잔의 물",autoNext:false},
+      {emoji:"🛏️",title:"잠자리 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깔끔한 침대로 기분 전환",autoNext:false},
+      {emoji:"🪥",title:"양치질",time:3,hours:0,minutes:3,seconds:0,desc:"상쾌한 아침의 시작",autoNext:false},
+      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+      {emoji:"🥣",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"천천히 맛있게 먹기",autoNext:false},
+    ]
+  },
+  {
+    title: "집중 공부 루틴",
+    tasks: [
+      {emoji:"🧹",title:"책상 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깨끗한 공간, 맑은 머리",autoNext:false},
+      {emoji:"🎧",title:"집중",time:50,hours:0,minutes:50,seconds:0,desc:"몰입하는 시간",autoNext:false},
+      {emoji:"☕",title:"휴식",time:10,hours:0,minutes:10,seconds:0,desc:"잠깐 쉬어가기",autoNext:false},
+      {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"굳은 몸 풀어주기",autoNext:false},
+      {emoji:"📖",title:"복습",time:30,hours:0,minutes:30,seconds:0,desc:"배운 것을 내 것으로",autoNext:false},
+    ]
+  },
+  {
+    title: "저녁 마무리 루틴",
+    tasks: [
+      {emoji:"🌙",title:"오늘 하루 돌아보기",time:5,hours:0,minutes:5,seconds:0,desc:"오늘 어떤 하루였나요?",autoNext:false},
+      {emoji:"🤸",title:"스트레칭",time:5,hours:0,minutes:5,seconds:0,desc:"굳은 몸 풀어주기",autoNext:false},
+      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+      {emoji:"🧘‍♀️",title:"취침 명상",time:12,hours:0,minutes:12,seconds:0,desc:"편안한 잠을 위한 마음 정리",autoNext:false},
+      {emoji:"📝",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루 기록하기",autoNext:false},
+    ]
+  },
+];
+const CATEGORIES = ["아침","저녁","운동","공부","여유"];
+const DAYS = ["일","월","화","수","목","금","토"];
+const SEC_VALUES = [0,5,10,15,20,25,30,35,40,45,50,55];
+
+let routines = JSON.parse(localStorage.getItem("liflow4_routines") || "[]");
+let currentScreen = "home";
+let screenHistory = [];
+let editingId = null;
+let formDays = [1,2,3,4,5];
+let formCycle = "매일";
+let formAmPm = "AM";
+let formNotifOn = false;
+let formNotifType = "push";
+let formFreq = "every";
+let formAlarm = "vibrate";
+let detailRoutineId = null;
+let detailChecked = {};
+let editTaskRoutineId = null;
+let editTaskIndex = -1;
+let editTaskData = {};
+let playRoutineId = null;
+let playTaskIdx = 0;
+let playTimerInterval = null;
+let playSecondsLeft = 0;
+let playTotalSeconds = 0;
+let playPaused = true;
+let playStartTime = null;
+let sheetCategory = "아침";
+let sheetContext = "detail";
+
+// Drag state
+let dragState = null;
+
+const today = new Date().toDateString();
+const savedChecked = JSON.parse(localStorage.getItem("liflow4_checked") || "{}");
+detailChecked = savedChecked._date === today ? savedChecked : { _date: today };
+
+// NAV
+function navigateTo(screen, data) {
+  const ids = {home:'screenHome',create:'screenCreate',detail:'screenDetail',taskEdit:'screenTaskEdit',play:'screenPlay'};
+  const prev = currentScreen;
+  if (prev !== screen) screenHistory.push(prev);
+  Object.keys(ids).forEach(k => {
+    const el = document.getElementById(ids[k]);
+    if (k === screen) el.classList.remove('hidden','hidden-left');
+    else if (k === prev) el.classList.add(screen === 'home' || screenHistory.indexOf(screen) >= 0 ? 'hidden' : 'hidden-left');
+    else el.classList.add('hidden');
+  });
+  currentScreen = screen;
+  document.getElementById('homeFab').style.display = screen === 'home' ? '' : 'none';
+  document.getElementById('detailBottomBar').style.display = screen === 'detail' ? '' : 'none';
+  if (screen === 'home') { renderHome(); screenHistory = []; }
+  if (screen === 'create') initCreateForm(data);
+  if (screen === 'detail') initDetail(data);
+  if (screen === 'taskEdit') initTaskEdit(data);
+  if (screen === 'play') initPlay(data);
+}
+
+// HOME
+function renderHome() {
+  const h = new Date().getHours();
+  document.getElementById("homeGreeting").textContent = h<6?"늦은 밤이에요":h<12?"좋은 아침이에요":h<18?"좋은 오후예요":"좋은 저녁이에요";
+  const q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  document.getElementById("homeQuote").innerHTML = q.replace("\n","<br>");
+  const d = new Date();
+  document.getElementById("homeDate").textContent = `${d.getMonth()+1}월 ${d.getDate()}일 ${DAYS[d.getDay()]}요일`;
+  const c = document.getElementById("routineCards");
+  if (!routines.length) {
+    document.getElementById("homeSectionTitle").style.display = "none";
+    c.innerHTML = `<div class="home-empty"><div class="icon">☀️</div>아직 루틴이 없어요<br>+ 버튼을 눌러 첫 루틴을 만들어 보세요</div>`;
+    renderRecommendSection();
+    return;
+  }
+  document.getElementById("homeSectionTitle").style.display = "";
+  c.innerHTML = routines.map((r,i) => {
+    const dayStr = r.days.length===7?"매일":r.days.length===0?"":r.days.map(d=>DAYS[d]).join("·");
+    const totalMin = r.tasks.reduce((s,t)=>s+taskSeconds(t),0);
+    const totalStr = formatTotalTime(totalMin);
+    const icons = r.tasks.slice(0,6).map(t=>t.emoji).join("");
+    const more = r.tasks.length>6?`<span style="font-size:12px;color:var(--text-light);">+${r.tasks.length-6}</span>`:"";
+    return `<div class="routine-card${r.disabled?' disabled':''}" style="animation-delay:${i*0.06}s" onclick="navigateTo('detail',{id:'${r.id}'})">
+      <div class="routine-card-top"><div>
+        <div class="routine-card-title">${r.title||'이름 없는 루틴'}</div>
+        <div class="routine-card-meta">${r.startTime?`<span>${r.startTime}</span>`:''}${dayStr?`<span>${dayStr}</span>`:''}<span>${totalStr}</span></div>
+      </div>
+      <button class="routine-card-play" onclick="event.stopPropagation();navigateTo('play',{id:'${r.id}'})">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button></div>
+      <div class="routine-card-bottom"><div class="routine-card-icons">${icons}${more}</div>
+        <span style="font-size:12px;color:var(--text-light);">${r.tasks.length}개 행동</span></div>
+    </div>`;
+  }).join("");
+  renderRecommendSection();
+}
+
+// RECOMMEND ROUTINES
+function renderRecommendSection() {
+  const sec = document.getElementById("recommendSection");
+  const existingTitles = routines.map(r => r.title);
+  sec.innerHTML = RECOMMEND_ROUTINES.map((rec, i) => {
+    const isAdded = existingTitles.includes(rec.title);
+    const totalMin = rec.tasks.reduce((s,t) => s + t.time, 0);
+    const icons = rec.tasks.slice(0,5).map(t => t.emoji).join("");
+    return `<div class="recommend-card" style="animation-delay:${i*0.06}s">
+      <div class="recommend-card-info">
+        <div class="recommend-card-title">${rec.title}</div>
+        <div class="recommend-card-meta">${icons} · ${totalMin}분</div>
+      </div>
+      <button class="recommend-add-btn ${isAdded?'added':''}" onclick="addRecommendRoutine(${i})">
+        ${isAdded ? '✓ 추가됨' : '+ 추가'}
+      </button>
+    </div>`;
+  }).join("");
+}
+function addRecommendRoutine(idx) {
+  const rec = RECOMMEND_ROUTINES[idx];
+  if (!rec) return;
+  if (routines.find(r => r.title === rec.title)) { showToast("이미 추가된 루틴이에요"); return; }
+  const newRoutine = {
+    id: genId(), title: rec.title, days: [0,1,2,3,4,5,6], cycle: "매일",
+    startTime: "07:00 AM", notifOn: false, notifType: "push", notifMsg: "",
+    notifFreq: "every", alarmType: "vibrate",
+    tasks: rec.tasks.map(t => ({...t})), disabled: false,
+  };
+  routines.push(newRoutine);
+  saveAll();
+  showToast(`${rec.title} 추가됨!`);
+  renderHome();
+}
+
+// DETAIL
+function initDetail(data) {
+  if (!data||!data.id) return;
+  detailRoutineId = data.id;
+  renderDetail();
+}
+function renderDetail() {
+  const r = routines.find(x=>x.id===detailRoutineId);
+  if (!r) return;
+  document.getElementById("detailTitle").textContent = r.title;
+  const body = document.getElementById("detailBody");
+  if (!r.tasks.length) {
+    body.innerHTML = `<div class="detail-empty"><div class="icon">📋</div>아직 행동이 없어요<br>+ 버튼을 눌러 추가하세요</div>`;
+    return;
+  }
+  const checked = detailChecked[r.id]||{};
+  body.innerHTML = r.tasks.map((t,i) => {
+    const isDone = !!checked[i];
+    const timeStr = formatTaskTime(t);
+    return `<div class="detail-task-item ${isDone?'done':''}" style="animation-delay:${i*0.04}s"
+      data-idx="${i}"
+      onclick="onTaskItemClick(event,${i})"
+      ontouchstart="onTaskTouchStart(event,${i})"
+      ontouchmove="onTaskTouchMove(event)" ontouchend="onTaskTouchEnd(event)">
+      <div class="detail-task-num">${i+1}</div>
+      <div class="detail-task-emoji">${t.emoji}</div>
+      <div class="detail-task-info"><div class="detail-task-title">${t.title}</div><div class="detail-task-time">${timeStr}${t.autoNext?' · 자동 넘김':''}</div></div>
+      <div class="detail-task-check ${isDone?'done':''}" onclick="event.stopPropagation();toggleDetailCheck('${r.id}',${i})">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>`;
+  }).join("");
+}
+function onTaskItemClick(event, idx) {
+  if (dragState) return;
+  navigateTo('taskEdit',{routineId:detailRoutineId,taskIndex:idx});
+}
+function toggleDetailCheck(rid,ti) {
+  if (!detailChecked[rid]) detailChecked[rid] = {};
+  detailChecked[rid][ti] = !detailChecked[rid][ti];
+  detailChecked._date = today;
+  localStorage.setItem("liflow4_checked", JSON.stringify(detailChecked));
+  renderDetail();
+}
+function startFromDetail() {
+  const r = routines.find(x=>x.id===detailRoutineId);
+  if (!r||!r.tasks.length) { showToast("행동을 먼저 추가하세요"); return; }
+  navigateTo('play',{id:detailRoutineId});
+}
+
+// DRAG REORDER
+let longPressTimer = null;
+function onTaskTouchStart(e, idx) {
+  const touch = e.touches[0];
+  longPressTimer = setTimeout(() => {
+    startDrag(idx, touch.clientY);
+  }, 400);
+}
+function onTaskTouchMove(e) {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  if (!dragState) return;
+  e.preventDefault();
+  const y = e.touches[0].clientY;
+  moveDrag(y);
+}
+function onTaskTouchEnd(e) {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  if (!dragState) return;
+  endDrag();
+}
+
+function startDrag(idx, startY) {
+  const r = routines.find(x=>x.id===detailRoutineId);
+  if (!r) return;
+  const body = document.getElementById("detailBody");
+  const items = body.querySelectorAll('.detail-task-item');
+  const item = items[idx];
+  if (!item) return;
+
+  const rect = item.getBoundingClientRect();
+  dragState = {
+    fromIdx: idx,
+    currentIdx: idx,
+    startY: startY,
+    offsetY: startY - rect.top,
+    itemHeight: rect.height,
+    totalItems: r.tasks.length,
+  };
+
+  // Clone the item to be the floating one
+  item.classList.add('dragging');
+  item.style.top = (startY - dragState.offsetY) + 'px';
+  item.style.width = rect.width + 'px';
+
+  // Add visual feedback
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function moveDrag(y) {
+  if (!dragState) return;
+  const body = document.getElementById("detailBody");
+  const items = body.querySelectorAll('.detail-task-item');
+  const draggingItem = items[dragState.fromIdx];
+  if (!draggingItem) return;
+
+  draggingItem.style.top = (y - dragState.offsetY) + 'px';
+
+  // Find drop target
+  let newIdx = dragState.fromIdx;
+  items.forEach((item, i) => {
+    if (i === dragState.fromIdx) return;
+    const rect = item.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    if (y > mid && i > dragState.currentIdx) newIdx = i;
+    if (y < mid && i < dragState.currentIdx) newIdx = i;
+  });
+
+  if (newIdx !== dragState.currentIdx) {
+    dragState.currentIdx = newIdx;
+    // Visual shift of other items
+    items.forEach((item, i) => {
+      if (i === dragState.fromIdx) return;
+      if (dragState.fromIdx < dragState.currentIdx) {
+        item.style.transform = (i > dragState.fromIdx && i <= dragState.currentIdx) ? `translateY(-${dragState.itemHeight}px)` : '';
+      } else {
+        item.style.transform = (i >= dragState.currentIdx && i < dragState.fromIdx) ? `translateY(${dragState.itemHeight}px)` : '';
+      }
+    });
+  }
+}
+
+function endDrag() {
+  if (!dragState) return;
+  const r = routines.find(x=>x.id===detailRoutineId);
+  if (!r) { dragState = null; return; }
+
+  const from = dragState.fromIdx;
+  const to = dragState.currentIdx;
+
+  if (from !== to) {
+    const [moved] = r.tasks.splice(from, 1);
+    r.tasks.splice(to, 0, moved);
+    // Update checked states
+    const checked = detailChecked[r.id] || {};
+    const newChecked = {};
+    Object.keys(checked).forEach(k => {
+      const ki = parseInt(k);
+      if (isNaN(ki)) return;
+      let ni = ki;
+      if (ki === from) ni = to;
+      else if (from < to && ki > from && ki <= to) ni = ki - 1;
+      else if (from > to && ki >= to && ki < from) ni = ki + 1;
+      newChecked[ni] = checked[ki];
+    });
+    detailChecked[r.id] = newChecked;
+    localStorage.setItem("liflow4_checked", JSON.stringify(detailChecked));
+    saveAll();
+  }
+
+  dragState = null;
+  renderDetail();
+}
+
+// Detail task sheet
+function openDetailTaskSheet() {
+  sheetContext = "detail";
+  sheetCategory = "아침";
+  document.getElementById("customTaskInput").value = "";
+  renderTaskChips(); renderTaskPicker();
+  document.getElementById("taskSheet").classList.add("show");
+  document.getElementById("overlay").classList.add("show");
+}
+function addCustomTask() {
+  const input = document.getElementById("customTaskInput");
+  const title = input.value.trim();
+  if (!title) return;
+  const r = routines.find(x=>x.id===detailRoutineId);
+  if (!r) return;
+  r.tasks.push({emoji:"✨",title,time:5,hours:0,minutes:5,seconds:0,desc:"",autoNext:false});
+  saveAll(); renderDetail();
+  input.value = "";
+  showToast(`✨ ${title} 추가됨`);
+}
+
+// Menu
+function openMenuSheet() {
+  const r = routines.find(x=>x.id===detailRoutineId);
+  if (!r) return;
+  document.getElementById("menuSheetBody").innerHTML = `
+    <button class="menu-sheet-item" onclick="closeMenuSheet();navigateTo('create',{id:'${r.id}'})"><div class="menu-icon">⚙️</div>설정</button>
+    <button class="menu-sheet-item" onclick="closeMenuSheet();duplicateRoutine('${r.id}')"><div class="menu-icon">📋</div>복사하기</button>
+    <button class="menu-sheet-item" onclick="closeMenuSheet();toggleDisable('${r.id}')"><div class="menu-icon">${r.disabled?'▶️':'⏸️'}</div>${r.disabled?'활성화':'비활성화'}</button>
+    <button class="menu-sheet-item danger" onclick="closeMenuSheet();deleteRoutine('${r.id}')"><div class="menu-icon">🗑️</div>삭제</button>`;
+  document.getElementById("menuSheet").classList.add("show");
+  document.getElementById("menuOverlay").classList.add("show");
+}
+function closeMenuSheet() { document.getElementById("menuSheet").classList.remove("show"); document.getElementById("menuOverlay").classList.remove("show"); }
+function deleteRoutine(id) { routines=routines.filter(r=>r.id!==id); saveAll(); showToast("루틴이 삭제되었어요"); navigateTo("home"); }
+function duplicateRoutine(id) {
+  const o=routines.find(r=>r.id===id); if(!o)return;
+  const d=JSON.parse(JSON.stringify(o)); d.id=genId(); d.title=o.title+" (복사)";
+  routines.push(d); saveAll(); showToast("루틴이 복제되었어요"); navigateTo("home");
+}
+function toggleDisable(id) {
+  const r=routines.find(x=>x.id===id); if(!r)return;
+  r.disabled=!r.disabled; saveAll();
+  showToast(r.disabled?"루틴이 비활성화되었어요":"루틴이 활성화되었어요"); navigateTo("home");
+}
+
+// TASK EDIT
+function initTaskEdit(data) {
+  if (!data) return;
+  editTaskRoutineId = data.routineId;
+  editTaskIndex = data.taskIndex;
+  const r = routines.find(x=>x.id===editTaskRoutineId);
+  if (!r||!r.tasks[editTaskIndex]) return;
+  const t = r.tasks[editTaskIndex];
+  editTaskData = {...t};
+  if (editTaskData.hours == null) {
+    const totalSec = (editTaskData.time||0)*60;
+    editTaskData.hours = Math.floor(totalSec/3600);
+    editTaskData.minutes = Math.floor((totalSec%3600)/60);
+    editTaskData.seconds = totalSec%60;
+  }
+  // Snap seconds to nearest 5
+  editTaskData.seconds = Math.round(editTaskData.seconds/5)*5;
+  if (editTaskData.seconds >= 60) editTaskData.seconds = 55;
+  renderTaskEditForm();
+  document.getElementById("screenTaskEdit").scrollTop = 0;
+}
+function renderTaskEditForm() {
+  const t = editTaskData;
+  document.getElementById("editTaskBody").innerHTML = `
+    <div class="edit-emoji-area">
+      <button class="edit-emoji-btn" onclick="openEmojiPicker()">${t.emoji}<span class="edit-emoji-hint">탭하여 변경</span></button>
+    </div>
+    <div class="form-section">
+      <label class="form-label">행동 제목</label>
+      <input class="text-input" id="editTaskTitle" value="${t.title}" maxlength="30" oninput="editTaskData.title=this.value">
+    </div>
+    <div class="form-section">
+      <label class="form-label">지속 시간</label>
+      <div class="scroll-picker-row">
+        <div class="scroll-picker-col">
+          <span class="scroll-picker-label">시간</span>
+          <div class="scroll-picker"><div class="scroll-picker-highlight"></div><div class="scroll-picker-inner" id="pickerH" data-field="hours"></div></div>
+        </div>
+        <div class="scroll-picker-col">
+          <span class="scroll-picker-label">분</span>
+          <div class="scroll-picker"><div class="scroll-picker-highlight"></div><div class="scroll-picker-inner" id="pickerM" data-field="minutes"></div></div>
+        </div>
+        <div class="scroll-picker-col">
+          <span class="scroll-picker-label">초</span>
+          <div class="scroll-picker"><div class="scroll-picker-highlight"></div><div class="scroll-picker-inner" id="pickerS" data-field="seconds"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="toggle-row">
+        <span class="toggle-row-label">자동 넘김</span>
+        <button class="toggle-switch ${t.autoNext?'on':''}" onclick="toggleAutoNext(this)"></button>
+      </div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:-8px;">시간이 끝나면 자동으로 다음 행동으로 넘어갑니다</div>
+    </div>
+    <div class="edit-actions">
+      <button class="edit-action-btn" onclick="copyTask()">복사하기</button>
+      <button class="edit-action-btn danger" onclick="deleteTask()">삭제하기</button>
+    </div>`;
+  setTimeout(()=>{
+    initScrollPicker('pickerH', 24, t.hours||0);
+    initScrollPicker('pickerM', 60, t.minutes||0);
+    initScrollPickerSeconds('pickerS', t.seconds||0);
+  }, 50);
+}
+
+function initScrollPicker(id, max, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const field = el.dataset.field;
+  el.innerHTML = Array.from({length:max}, (_,i) =>
+    `<div class="scroll-picker-item" data-val="${i}">${String(i).padStart(2,'0')}</div>`
+  ).join("");
+  el.scrollTop = value * 40;
+  updatePickerSelection(el, value);
+
+  let scrollTimeout;
+  el.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const idx = Math.round(el.scrollTop / 40);
+      const clamped = Math.max(0, Math.min(max-1, idx));
+      el.scrollTo({top: clamped*40, behavior:'smooth'});
+      editTaskData[field] = clamped;
+      updatePickerSelection(el, clamped);
+    }, 80);
+  }, {passive:true});
+}
+
+function initScrollPickerSeconds(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Snap to nearest 5
+  const snapped = Math.round(value/5)*5;
+  const secIdx = SEC_VALUES.indexOf(snapped >= 60 ? 55 : snapped);
+  el.innerHTML = SEC_VALUES.map(v =>
+    `<div class="scroll-picker-item" data-val="${v}">${String(v).padStart(2,'0')}</div>`
+  ).join("");
+  el.scrollTop = (secIdx >= 0 ? secIdx : 0) * 40;
+  updatePickerSelection(el, snapped);
+
+  let scrollTimeout;
+  el.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const idx = Math.round(el.scrollTop / 40);
+      const clamped = Math.max(0, Math.min(SEC_VALUES.length-1, idx));
+      el.scrollTo({top: clamped*40, behavior:'smooth'});
+      editTaskData.seconds = SEC_VALUES[clamped];
+      updatePickerSelection(el, SEC_VALUES[clamped]);
+    }, 80);
+  }, {passive:true});
+}
+
+function updatePickerSelection(container, val) {
+  container.querySelectorAll('.scroll-picker-item').forEach(item => {
+    item.classList.toggle('selected', parseInt(item.dataset.val) === val);
+  });
+}
+
+function toggleAutoNext(btn) { editTaskData.autoNext=!editTaskData.autoNext; btn.classList.toggle("on",editTaskData.autoNext); }
+function copyTask() {
+  const r=routines.find(x=>x.id===editTaskRoutineId); if(!r)return;
+  const cp={...editTaskData}; cp.title+=" (복사)";
+  r.tasks.splice(editTaskIndex+1,0,cp); saveAll();
+  showToast("행동이 복제되었어요"); navigateTo('detail',{id:editTaskRoutineId});
+}
+function deleteTask() {
+  const r=routines.find(x=>x.id===editTaskRoutineId); if(!r)return;
+  r.tasks.splice(editTaskIndex,1); saveAll();
+  showToast("행동이 삭제되었어요"); navigateTo('detail',{id:editTaskRoutineId});
+}
+function saveTaskEdit() {
+  const r=routines.find(x=>x.id===editTaskRoutineId);
+  if (!r||!r.tasks[editTaskIndex]) return;
+  const totalSec = (editTaskData.hours||0)*3600 + (editTaskData.minutes||0)*60 + (editTaskData.seconds||0);
+  editTaskData.time = Math.max(1, Math.ceil(totalSec/60));
+  r.tasks[editTaskIndex] = {...editTaskData};
+  saveAll(); showToast("행동이 수정되었어요"); navigateTo('detail',{id:editTaskRoutineId});
+}
+function goBackFromTaskEdit() { navigateTo('detail',{id:editTaskRoutineId}); }
+
+// Emoji
+function openEmojiPicker() {
+  document.getElementById("emojiGrid").innerHTML = EMOJIS.map(e=>`<button onclick="selectEmoji('${e}')">${e}</button>`).join("");
+  document.getElementById("emojiOverlay").classList.add("show");
+}
+function closeEmojiPicker() { document.getElementById("emojiOverlay").classList.remove("show"); }
+function selectEmoji(e) { editTaskData.emoji=e; closeEmojiPicker(); renderTaskEditForm(); }
+
+// CREATE
+function initCreateForm(data) {
+  editingId=null; formDays=[1,2,3,4,5]; formCycle="매주"; formAmPm="AM";
+  formNotifOn=false; formNotifType="push"; formFreq="every"; formAlarm="vibrate";
+  document.getElementById("inputTitle").value="";
+  document.getElementById("inputHour").value="07";
+  document.getElementById("inputMin").value="00";
+  document.getElementById("inputNotifMsg").value="";
+  document.getElementById("createTitle").textContent="새 루틴";
+  if (data&&data.id) {
+    const r=routines.find(x=>x.id===data.id);
+    if (r) {
+      editingId=r.id;
+      document.getElementById("createTitle").textContent="루틴 편집";
+      document.getElementById("inputTitle").value=r.title;
+      formDays=[...r.days]; formCycle=r.cycle||"매주";
+      if (r.days.length===7) formCycle="매일";
+      const parts=r.startTime&&r.startTime.match(/(\d+):(\d+)\s*(AM|PM)/);
+      if (parts) { document.getElementById("inputHour").value=parts[1]; document.getElementById("inputMin").value=parts[2]; formAmPm=parts[3]; }
+      formNotifOn=r.notifOn||false; formNotifType=r.notifType||"push";
+      formFreq=r.notifFreq||"every"; formAlarm=r.alarmType||"vibrate";
+      document.getElementById("inputNotifMsg").value=r.notifMsg||"";
+    }
+  }
+  renderCycleChips(); renderDayToggles(); updateNotifUI();
+  document.getElementById("ampmToggle").textContent=formAmPm;
+  document.getElementById("screenCreate").scrollTop=0;
+}
+function goBackFromCreate() { editingId?navigateTo('detail',{id:editingId}):navigateTo('home'); }
+function renderCycleChips() {
+  document.getElementById("cycleChips").innerHTML = ["매일","매주"].map(c=>
+    `<button class="cycle-chip ${formCycle===c?'active':''}" onclick="selectCycle('${c}')">${c}</button>`
+  ).join("");
+}
+function selectCycle(c) {
+  formCycle=c;
+  if (c==="매일") formDays=[0,1,2,3,4,5,6];
+  renderCycleChips(); renderDayToggles();
+}
+function renderDayToggles() {
+  const wrap = document.getElementById("dayTogglesWrap");
+  if (formCycle==="매일") { wrap.innerHTML=""; return; }
+  wrap.innerHTML = `<div class="day-toggles">${DAYS.map((d,i)=>
+    `<button class="day-toggle ${formDays.includes(i)?'active':''}" onclick="toggleDay(${i})">${d}</button>`
+  ).join("")}</div>`;
+}
+function toggleDay(i) {
+  if (formDays.includes(i)) formDays=formDays.filter(d=>d!==i); else formDays.push(i);
+  renderDayToggles();
+}
+function toggleAmPm() { formAmPm=formAmPm==="AM"?"PM":"AM"; document.getElementById("ampmToggle").textContent=formAmPm; }
+function toggleNotif() { formNotifOn=!formNotifOn; updateNotifUI(); }
+function updateNotifUI() {
+  document.getElementById("notifToggle").classList.toggle("on",formNotifOn);
+  document.getElementById("notifDetail").style.display=formNotifOn?"":"none";
+  switchNotifType(formNotifType);
+}
+function switchNotifType(t) {
+  formNotifType=t;
+  document.querySelectorAll("[data-ntype]").forEach(b=>b.classList.toggle("active",b.dataset.ntype===t));
+  document.getElementById("notifPush").style.display=t==="push"?"":"none";
+  document.getElementById("notifAlarm").style.display=t==="alarm"?"":"none";
+}
+function switchFreq(f) { formFreq=f; document.querySelectorAll("[data-freq]").forEach(b=>b.classList.toggle("active",b.dataset.freq===f)); }
+function switchAlarm(a) { formAlarm=a; document.querySelectorAll("[data-alarm]").forEach(b=>b.classList.toggle("active",b.dataset.alarm===a)); }
+function saveRoutine() {
+  const title=document.getElementById("inputTitle").value.trim();
+  if (!title) { showToast("루틴 이름을 입력해 주세요"); return; }
+  const hr=document.getElementById("inputHour").value.padStart(2,"0");
+  const mn=document.getElementById("inputMin").value.padStart(2,"0");
+  const data = {
+    id:editingId||genId(), title, days:[...formDays].sort(), cycle:formCycle,
+    startTime:`${hr}:${mn} ${formAmPm}`, notifOn:formNotifOn, notifType:formNotifType,
+    notifMsg:document.getElementById("inputNotifMsg").value.trim(),
+    notifFreq:formFreq, alarmType:formAlarm, tasks:[], disabled:false
+  };
+  if (editingId) {
+    const idx=routines.findIndex(r=>r.id===editingId);
+    if (idx!==-1) { data.tasks=routines[idx].tasks; data.disabled=routines[idx].disabled; routines[idx]=data; }
+  } else { routines.push(data); }
+  saveAll();
+  showToast(editingId?"루틴이 수정되었어요":"루틴이 생성되었어요");
+  if (editingId) navigateTo('detail',{id:editingId}); else navigateTo("home");
+}
+
+// TASK PICKER
+function renderTaskChips() {
+  document.getElementById("taskChips").innerHTML = CATEGORIES.map(c=>
+    `<button class="chip ${c===sheetCategory?'active':''}" onclick="selectSheetCat('${c}')">${c}</button>`
+  ).join("");
+}
+function selectSheetCat(c) { sheetCategory=c; renderTaskChips(); renderTaskPicker(); }
+function renderTaskPicker() {
+  const tasks = TASKS[sheetCategory]||[];
+  const r = routines.find(x=>x.id===detailRoutineId);
+  const addedTitles = r ? r.tasks.map(t=>t.title) : [];
+  document.getElementById("taskPickerList").innerHTML = tasks.map(t=>{
+    const isAdded=addedTitles.includes(t.title);
+    return `<div class="task-item">
+      <div class="task-icon">${t.emoji}</div>
+      <div class="task-info"><div class="task-title">${t.title} <span class="time">${t.time}분</span></div><div class="task-desc">${t.desc}</div></div>
+      <button class="task-add ${isAdded?'added':''}" onclick="pickTaskToDetail(this,'${t.emoji}','${t.title}',${t.time},'${t.desc}')">${isAdded?'✓':'+'}</button>
+    </div>`;
+  }).join("");
+}
+function pickTaskToDetail(btn,emoji,title,time,desc) {
+  const r=routines.find(x=>x.id===detailRoutineId);
+  if (!r) return;
+  if (r.tasks.find(t=>t.title===title)) { showToast("이미 추가된 행동이에요"); return; }
+  r.tasks.push({emoji,title,time,hours:0,minutes:time,seconds:0,desc,autoNext:false});
+  saveAll(); renderDetail();
+  btn.classList.add("added"); btn.innerHTML="✓";
+  showToast(`${emoji} ${title} 추가됨`);
+}
+function closeAllSheets() {
+  document.getElementById("taskSheet").classList.remove("show");
+  document.getElementById("overlay").classList.remove("show");
+}
+
+// Touch close
+[document.getElementById("taskSheet"),document.getElementById("menuSheet")].forEach(s=>{
+  let sy=0;
+  s.addEventListener("touchstart",e=>{sy=e.touches[0].clientY},{passive:true});
+  s.addEventListener("touchend",e=>{if(e.changedTouches[0].clientY-sy>80){closeAllSheets();closeMenuSheet();}},{passive:true});
+});
+
+// PLAY - Routinery style
+function initPlay(data) {
+  if (!data||!data.id) return;
+  const r=routines.find(x=>x.id===data.id);
+  if (!r||!r.tasks.length) { showToast("행동이 없어요"); navigateTo("home"); return; }
+  playRoutineId=r.id; playTaskIdx=0;
+  playPaused=false; // Auto-start
+  playStartTime = new Date();
+  clearInterval(playTimerInterval);
+  document.getElementById("playNavTitle").textContent=r.title;
+  renderPlayTask();
+  // Auto-start timer
+  startPlayTimer();
+}
+
+function renderPlayTask() {
+  const r=routines.find(x=>x.id===playRoutineId); if(!r)return;
+  const t=r.tasks[playTaskIdx]; if(!t)return;
+
+  document.getElementById("playEmoji").textContent=t.emoji;
+  document.getElementById("playTaskTitle").textContent=t.title;
+
+  playTotalSeconds = taskSeconds(t);
+  playSecondsLeft = playTotalSeconds;
+
+  // Time range: start → end
+  const now = new Date();
+  const taskStartTime = new Date(now);
+  // Calculate cumulative time for previous tasks
+  let prevSec = 0;
+  for (let i = 0; i < playTaskIdx; i++) prevSec += taskSeconds(r.tasks[i]);
+  const actualStart = new Date(playStartTime.getTime() + prevSec*1000);
+  const actualEnd = new Date(actualStart.getTime() + playTotalSeconds*1000);
+  document.getElementById("playTimeRange").textContent =
+    `${formatClockTime(actualStart)} → ${formatClockTime(actualEnd)}`;
+
+  updateTimerDisplay();
+  updatePlayPauseIcon();
+  renderPlayBottomInfo();
+}
+
+function renderPlayBottomInfo() {
+  const r=routines.find(x=>x.id===playRoutineId); if(!r)return;
+  const nextLabel = document.getElementById("playNextLabel");
+  const endTime = document.getElementById("playEndTime");
+
+  if (playTaskIdx < r.tasks.length - 1) {
+    const next = r.tasks[playTaskIdx + 1];
+    nextLabel.innerHTML = `다음 <strong>${next.emoji} ${next.title}</strong>`;
+  } else {
+    nextLabel.innerHTML = `마지막 행동이에요`;
+  }
+
+  // Total end time
+  let remainSec = 0;
+  for (let i = playTaskIdx; i < r.tasks.length; i++) {
+    remainSec += (i === playTaskIdx) ? playSecondsLeft : taskSeconds(r.tasks[i]);
+  }
+  const endDate = new Date(Date.now() + remainSec * 1000);
+  endTime.textContent = `종료 예정 ${formatClockTime(endDate)}`;
+}
+
+function formatClockTime(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2,'0');
+  const ampm = h >= 12 ? '오후' : '오전';
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${ampm} ${h}:${m}`;
+}
+
+function updateTimerDisplay() {
+  const circle = document.getElementById("timerCircle");
+  const timeEl = document.getElementById("playTime");
+  const labelEl = document.getElementById("playTimeLabel");
+  const circumference = 603; // 2*PI*96
+
+  if (playSecondsLeft >= 0) {
+    // Normal countdown
+    const h=Math.floor(playSecondsLeft/3600);
+    const m=Math.floor((playSecondsLeft%3600)/60);
+    const s=playSecondsLeft%60;
+    timeEl.textContent = h>0
+      ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    timeEl.classList.remove('overtime');
+    circle.classList.remove('overtime');
+    labelEl.textContent = '남은 시간';
+    const progress = playTotalSeconds > 0 ? playSecondsLeft / playTotalSeconds : 1;
+    circle.style.strokeDashoffset = circumference * (1 - progress);
+  } else {
+    // Overtime
+    const over = Math.abs(playSecondsLeft);
+    const m=Math.floor(over/60);
+    const s=over%60;
+    timeEl.textContent = `+${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    timeEl.classList.add('overtime');
+    circle.classList.add('overtime');
+    labelEl.textContent = '초과 시간';
+    circle.style.strokeDashoffset = 0;
+  }
+
+  renderPlayBottomInfo();
+}
+
+function startPlayTimer() {
+  clearInterval(playTimerInterval);
+  playPaused = false;
+  updatePlayPauseIcon();
+  playTimerInterval = setInterval(() => {
+    playSecondsLeft--;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function togglePlay() {
+  if (playPaused) {
+    startPlayTimer();
+  } else {
+    playPaused = true;
+    clearInterval(playTimerInterval);
+    updatePlayPauseIcon();
+  }
+}
+
+function updatePlayPauseIcon() {
+  document.getElementById("iconPlay").style.display=playPaused?"":"none";
+  document.getElementById("iconPause").style.display=playPaused?"none":"";
+}
+
+function completeCurrentTask() {
+  const r=routines.find(x=>x.id===playRoutineId); if(!r)return;
+  clearInterval(playTimerInterval);
+
+  // Mark as checked
+  if (!detailChecked[r.id]) detailChecked[r.id] = {};
+  detailChecked[r.id][playTaskIdx] = true;
+  detailChecked._date = today;
+  localStorage.setItem("liflow4_checked", JSON.stringify(detailChecked));
+
+  if (playTaskIdx < r.tasks.length - 1) {
+    playTaskIdx++;
+    renderPlayTask();
+    startPlayTimer();
+  } else {
+    showDone();
+  }
+}
+
+function playNext() {
+  const r=routines.find(x=>x.id===playRoutineId); if(!r)return;
+  clearInterval(playTimerInterval);
+  if (playTaskIdx < r.tasks.length-1) {
+    playTaskIdx++;
+    renderPlayTask();
+    startPlayTimer();
+  } else {
+    showDone();
+  }
+}
+function playPrev() { clearInterval(playTimerInterval); if(playTaskIdx>0){playTaskIdx--;renderPlayTask();startPlayTimer();} }
+function stopRoutine() { clearInterval(playTimerInterval); playPaused=true; navigateTo("detail",{id:playRoutineId}); }
+function showDone() {
+  clearInterval(playTimerInterval);
+  const r=routines.find(x=>x.id===playRoutineId);
+  const total=r?r.tasks.reduce((s,t)=>s+taskSeconds(t),0):0;
+  document.getElementById("doneDesc").textContent=`${r?r.tasks.length:0}개 행동, 총 ${formatTotalTime(total)} 완료!`;
+  document.getElementById("doneOverlay").classList.add("show");
+  // Check if all routines' tasks are done for today
+  doneRoutineId = r ? r.id : null;
+}
+let doneRoutineId = null;
+function closeDone() {
+  document.getElementById("doneOverlay").classList.remove("show");
+  navigateTo("home");
+  // Trigger celebration after navigating home
+  setTimeout(() => {
+    const allDone = checkAllRoutinesDone();
+    if (allDone) {
+      celebrateAllComplete();
+    } else {
+      celebrateTaskComplete();
+    }
+  }, 500);
+}
+function checkAllRoutinesDone() {
+  // Check if all enabled routines have all tasks checked
+  const activeRoutines = routines.filter(r => !r.disabled && r.tasks.length > 0);
+  if (!activeRoutines.length) return false;
+  return activeRoutines.every(r => {
+    const checked = detailChecked[r.id] || {};
+    return r.tasks.every((_, i) => !!checked[i]);
+  });
+}
+
+// UTILS
+function genId() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function saveAll() { localStorage.setItem("liflow4_routines",JSON.stringify(routines)); }
+function taskSeconds(t) {
+  if (t.hours!=null) return (t.hours||0)*3600+(t.minutes||0)*60+(t.seconds||0);
+  return (t.time||0)*60;
+}
+function formatTaskTime(t) {
+  const sec=taskSeconds(t);
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+  if (h>0&&s>0) return `${h}시간 ${m}분 ${s}초`;
+  if (h>0) return m>0?`${h}시간 ${m}분`:`${h}시간`;
+  if (s>0&&m>0) return `${m}분 ${s}초`;
+  if (s>0) return `${s}초`;
+  return `${m}분`;
+}
+function formatTotalTime(sec) {
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60);
+  if (h>0) return m>0?`${h}시간 ${m}분`:`${h}시간`;
+  return `${m}분`;
+}
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+// CHARACTER ANIMATION
+function onCharacterTap() {
+  const img = document.getElementById('homeCharacter');
+  if (!img) return;
+  img.classList.remove('bounce');
+  void img.offsetWidth;
+  img.classList.add('bounce');
+  setTimeout(() => { img.classList.remove('bounce'); }, 700);
+  setTimeout(() => openMoodModal(), 300);
+}
+
+function spawnParticles(count, big) {
+  const container = document.getElementById('charParticles');
+  if (!container) return;
+  const emojis = ['✨','⭐','💫','🌟','🎉','🎊'];
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('span');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+    const dist = (big ? 60 : 40) + Math.random() * 20;
+    p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+    p.style.fontSize = big ? '18px' : '14px';
+    p.style.animationDelay = (i * 0.05) + 's';
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+
+function celebrateTaskComplete() {
+  const img = document.getElementById('homeCharacter');
+  if (!img || img.parentElement.style.display === 'none') return;
+  spawnParticles(6, false);
+}
+function celebrateAllComplete() {
+  const img = document.getElementById('homeCharacter');
+  if (!img || img.parentElement.style.display === 'none') return;
+  img.classList.remove('celebrate');
+  void img.offsetWidth;
+  img.classList.add('celebrate');
+  spawnParticles(12, true);
+  setTimeout(() => { img.classList.remove('celebrate'); }, 1500);
+  showToast('오늘도 완벽해요! 🎉');
+}
+
+// MOOD MODAL
+let selectedMood = null;
+let selectedEnergy = null;
+let moodResultRoutine = null;
+
+function openMoodModal() {
+  selectedMood = null;
+  selectedEnergy = null;
+  moodResultRoutine = null;
+  document.querySelectorAll('#moodOptions .mood-option').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('#energyOptions .mood-option').forEach(b => b.classList.remove('selected'));
+  document.getElementById('moodSubmit').disabled = true;
+  document.getElementById('moodSelectView').style.display = '';
+  document.getElementById('moodResultView').style.display = 'none';
+  document.getElementById('moodOverlay').classList.add('show');
+}
+function closeMoodModal() {
+  document.getElementById('moodOverlay').classList.remove('show');
+}
+function selectMood(m) {
+  selectedMood = m;
+  document.querySelectorAll('#moodOptions .mood-option').forEach(b =>
+    b.classList.toggle('selected', b.dataset.mood === m));
+  updateMoodSubmit();
+}
+function selectEnergy(e) {
+  selectedEnergy = e;
+  document.querySelectorAll('#energyOptions .mood-option').forEach(b =>
+    b.classList.toggle('selected', b.dataset.energy === e));
+  updateMoodSubmit();
+}
+function updateMoodSubmit() {
+  document.getElementById('moodSubmit').disabled = !(selectedMood && selectedEnergy);
+}
+
+const MOOD_MAP = {
+  'good_high':   { routine: '상쾌한 아침 루틴', msg: '오늘 에너지 넘치네요! 활기차게 시작해봐요 🔥' },
+  'good_mid':    { routine: '집중 공부 루틴',   msg: '기분 좋은 날, 한 가지에 집중해봐요 ✨' },
+  'good_low':    { routine: '평온해지는 루틴',   msg: '좋은 기분 그대로 천천히 흘러가요 🌿' },
+  'normal_high': { routine: '집중 공부 루틴',   msg: '에너지를 좋은 곳에 써봐요 💪' },
+  'normal_mid':  { routine: '저녁 마무리 루틴',  msg: '오늘 하루도 수고했어요 🌙' },
+  'normal_low':  { routine: '평온해지는 루틴',   msg: '지금 이 순간, 나를 위한 시간이에요 🍵' },
+  'tired_high':  { routine: '저녁 마무리 루틴',  msg: '몸은 피곤해도 마음은 괜찮아요 🌸' },
+  'tired_mid':   { routine: '평온해지는 루틴',   msg: '오늘은 푹 쉬어도 돼요 💙' },
+  'tired_low':   { routine: '평온해지는 루틴',   msg: '아무것도 안 해도 괜찮은 날이에요 🌙' },
+};
+
+function submitMoodRecommend() {
+  if (!selectedMood || !selectedEnergy) return;
+  const key = selectedMood + '_' + selectedEnergy;
+  const result = MOOD_MAP[key];
+  if (!result) return;
+
+  const rec = RECOMMEND_ROUTINES.find(r => r.title === result.routine);
+  if (!rec) return;
+  moodResultRoutine = result.routine;
+
+  // Switch to result view inside modal
+  document.getElementById('moodSelectView').style.display = 'none';
+  const rv = document.getElementById('moodResultView');
+  rv.style.display = '';
+  rv.innerHTML = `<div class="mood-result">
+    <div class="mood-result-title">${result.routine}</div>
+    <div class="mood-result-msg">${result.msg}</div>
+    <div class="mood-result-tasks">
+      ${rec.tasks.map(t => `<div class="mood-result-task">
+        <span class="mr-emoji">${t.emoji}</span>
+        <span>${t.title}</span>
+        <span class="mr-time">${t.time}분</span>
+      </div>`).join("")}
+    </div>
+    <div class="mood-result-btns">
+      <button class="mood-btn-close" onclick="closeMoodModal()">닫기</button>
+      <button class="mood-btn-start" onclick="startMoodRoutine()">시작하기</button>
+    </div>
+  </div>`;
+
+  // Character bounce + particles
+  const img = document.getElementById('homeCharacter');
+  if (img) {
+    img.classList.remove('bounce');
+    void img.offsetWidth;
+    img.classList.add('bounce');
+    setTimeout(() => img.classList.remove('bounce'), 700);
+  }
+  spawnParticles(4, false);
+}
+
+function startMoodRoutine() {
+  if (!moodResultRoutine) return;
+  closeMoodModal();
+  const existing = routines.find(r => r.title === moodResultRoutine);
+  if (existing) {
+    navigateTo('detail', {id: existing.id});
+  } else {
+    const rec = RECOMMEND_ROUTINES.find(r => r.title === moodResultRoutine);
+    if (rec) {
+      const newR = {
+        id: genId(), title: rec.title, days: [0,1,2,3,4,5,6], cycle: "매일",
+        startTime: "07:00 AM", notifOn: false, notifType: "push", notifMsg: "",
+        notifFreq: "every", alarmType: "vibrate",
+        tasks: rec.tasks.map(t => ({...t})), disabled: false,
+      };
+      routines.push(newR);
+      saveAll();
+      navigateTo('detail', {id: newR.id});
+    }
+  }
+  moodResultRoutine = null;
+}
+
+// INIT
+document.getElementById('detailBottomBar').style.display = 'none';
+renderHome();
+
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+}
+</script>
+</body>
+</html>
