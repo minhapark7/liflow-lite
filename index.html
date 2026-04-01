@@ -182,8 +182,7 @@
   .mood-result-btns button:active { transform: scale(0.98); }
   .mood-btn-close { background: var(--chip-bg); color: var(--text); }
   .mood-btn-start { background: var(--accent); color: #fff; }
-  .home-empty { text-align: center; padding: 32px 24px 20px; color: var(--text-light); font-size: 14px; line-height: 1.6; }
-  .home-empty .icon { font-size: 40px; margin-bottom: 8px; opacity: 0.4; }
+  .home-empty { display: flex; align-items: center; justify-content: center; text-align: center; padding: 32px 24px 20px; color: var(--text-light); font-size: 14px; line-height: 1.6; min-height: 120px; }
   .recommend-section { padding: 0 24px 140px; display: flex; flex-direction: column; gap: 10px; }
   .recommend-card {
     background: var(--bg-sub); border-radius: var(--radius); padding: 16px 20px;
@@ -1181,7 +1180,7 @@ function renderHome() {
   const c = document.getElementById("routineCards");
   if (!routines.length) {
     document.getElementById("homeSectionTitle").style.display = "none";
-    c.innerHTML = `<div class="home-empty"><div class="icon">☀️</div>아직 루틴이 없어요<br>+ 버튼을 눌러 첫 루틴을 만들어 보세요</div>`;
+    c.innerHTML = `<div class="home-empty">아직 루틴이 없어요<br>+ 버튼을 눌러 첫 루틴을 만들어 보세요</div>`;
     renderRecommendSection();
     return;
   }
@@ -2243,7 +2242,7 @@ function renderRoutineTab() {
   const countEl = document.getElementById("routineTabCount");
   countEl.textContent = routines.length ? `${routines.length}개의 루틴` : '';
   if (!routines.length) {
-    c.innerHTML = `<div class="home-empty"><div class="icon">📋</div>아직 루틴이 없어요<br>+ 버튼을 눌러 첫 루틴을 만들어 보세요</div>`;
+    c.innerHTML = `<div class="home-empty">아직 루틴이 없어요<br>+ 버튼을 눌러 첫 루틴을 만들어 보세요</div>`;
     return;
   }
   c.innerHTML = routines.map((r,i) => {
