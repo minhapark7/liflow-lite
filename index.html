@@ -182,7 +182,8 @@
   .mood-result-btns button:active { transform: scale(0.98); }
   .mood-btn-close { background: var(--chip-bg); color: var(--text); }
   .mood-btn-start { background: var(--accent); color: #fff; }
-  .home-empty { display: flex; align-items: center; justify-content: center; text-align: center; padding: 32px 24px 20px; color: var(--text-light); font-size: 14px; line-height: 1.6; min-height: 120px; }
+  .home-empty { display: flex; align-items: center; justify-content: center; text-align: center; padding: 64px 24px 40px; color: var(--text-light); font-size: 14px; line-height: 1.6; min-height: 240px; }
+  .recommend-context { padding: 0 24px 8px; font-size: 12px; color: var(--text-light); line-height: 1.5; }
   .recommend-section { padding: 0 24px 140px; display: flex; flex-direction: column; gap: 10px; }
   .recommend-card {
     background: var(--bg-sub); border-radius: var(--radius); padding: 16px 20px;
@@ -673,6 +674,85 @@
   .placeholder-img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 16px; opacity: 0.5; border-radius: 16px; }
   .placeholder-text { font-size: 15px; color: var(--text-light); }
 
+  /* Insight / Habit Tracker */
+  .insight-wrap { padding: 56px 0 140px; }
+  .insight-header { padding: 0 24px 20px; }
+  .insight-month { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .insight-summary {
+    display: flex; gap: 0; margin-top: 16px;
+    background: var(--bg-sub); border-radius: var(--radius); overflow: hidden;
+  }
+  .insight-stat {
+    flex: 1; padding: 16px 12px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .insight-stat:last-child { border-right: none; }
+  .insight-stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .insight-stat-label { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+  /* Calendar grid */
+  .insight-calendar { margin-top: 4px; }
+  .insight-calendar-scroll {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .insight-calendar-scroll::-webkit-scrollbar { display: none; }
+  .insight-cal-table { border-collapse: collapse; }
+  .insight-cal-table th, .insight-cal-table td {
+    min-width: 32px; height: 32px; text-align: center; font-size: 11px;
+    padding: 0; position: relative;
+  }
+  .insight-cal-table th {
+    font-weight: 500; color: var(--text-sub); position: sticky; top: 0;
+    background: var(--bg); z-index: 2;
+  }
+  .insight-cal-table th.today-col {
+    color: var(--text); font-weight: 700;
+  }
+  .insight-cal-table th.today-col::after {
+    content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+  }
+  .insight-routine-label {
+    position: sticky; left: 0; z-index: 3; background: var(--bg);
+    text-align: left; padding: 0 12px 0 24px !important; white-space: nowrap;
+    font-size: 12px; font-weight: 500; color: var(--text); min-width: 100px !important;
+    border-right: 1px solid var(--border);
+  }
+  .cal-dot {
+    width: 18px; height: 18px; border-radius: 50%; display: inline-block;
+    vertical-align: middle; transition: all 0.2s;
+  }
+  .cal-dot.done { background: #1a1a1a; }
+  .cal-dot.undone { background: #e8e8e8; }
+  .cal-dot.future { background: transparent; border: 1px solid var(--border); opacity: 0.3; }
+  td.today-col .cal-dot.done { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px #1a1a1a; }
+  td.today-col .cal-dot.undone { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px #e8e8e8; }
+
+  /* Routine cards */
+  .insight-cards { padding: 24px 24px 0; display: flex; flex-direction: column; gap: 12px; }
+  .insight-cards-title { font-size: 14px; font-weight: 600; color: var(--text-sub); padding: 20px 24px 0; }
+  .insight-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .insight-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .insight-card-name { font-size: 15px; font-weight: 600; }
+  .insight-card-pct { font-size: 14px; font-weight: 700; }
+  .insight-card-streak { font-size: 12px; color: var(--text-sub); margin-bottom: 10px; }
+  .insight-progress-bar {
+    height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden;
+  }
+  .insight-progress-fill {
+    height: 100%; background: #1a1a1a; border-radius: 3px; transition: width 0.4s ease;
+  }
+
+  .insight-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: calc(100dvh - 200px); text-align: center; padding: 24px;
+  }
+  .insight-empty-text { font-size: 15px; color: var(--text-light); }
+
   /* Routine tab */
   .routine-tab-header { padding: 56px 24px 0; }
   .routine-tab-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
@@ -698,6 +778,7 @@
   <div class="home-section-title" id="homeSectionTitle">내 루틴</div>
   <div class="routine-cards" id="routineCards"></div>
   <div class="home-section-title" id="recommendSectionTitle">추천 루틴</div>
+  <div class="recommend-context" id="recommendContext"></div>
   <div class="recommend-section" id="recommendSection"></div>
 </div>
 
@@ -854,10 +935,7 @@
 </div>
 
 <div class="screen tab-hidden" id="screenInsight">
-  <div class="placeholder-body">
-    <img class="placeholder-img" src="character.png" alt="" onerror="this.style.display='none'">
-    <div class="placeholder-text">곧 업데이트 예정이에요 🌱</div>
-  </div>
+  <div id="insightBody"></div>
 </div>
 
 <div class="screen tab-hidden" id="screenMy">
@@ -1065,28 +1143,173 @@ const QUOTES = [
   "완벽하지 않아도\n괜찮아요, 시작이 중요해요","어제보다 나은 오늘을\n만들어 가요",
   "좋은 습관은\n좋은 하루를 만들어요","나를 위한 시간,\n루틴으로 시작해요",
 ];
-const RECOMMEND_ROUTINES = [
-  {
-    title: "상쾌한 아침 루틴",
+const RECOMMEND_POOL = {
+  rain: {
+    title: "비 오는 날 실내 루틴",
+    tasks: [
+      {emoji:"🧘",title:"명상",time:10,hours:0,minutes:10,seconds:0,desc:"빗소리와 함께 마음 정리",autoNext:false},
+      {emoji:"📚",title:"독서",time:30,hours:0,minutes:30,seconds:0,desc:"비 오는 날의 독서",autoNext:false},
+      {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"실내에서 몸 풀기",autoNext:false},
+      {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
+    ]
+  },
+  outdoor: {
+    title: "야외 활동 루틴",
+    tasks: [
+      {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"몸을 부드럽게 풀기",autoNext:false},
+      {emoji:"🚶",title:"산책",time:40,hours:0,minutes:40,seconds:0,desc:"맑은 날 바깥 산책",autoNext:false},
+      {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 씻기",autoNext:false},
+      {emoji:"📚",title:"독서",time:30,hours:0,minutes:30,seconds:0,desc:"여유롭게 책 읽기",autoNext:false},
+    ]
+  },
+  weekend_morning: {
+    title: "여유로운 주말 아침 루틴",
     tasks: [
       {emoji:"💧",title:"물 마시기",time:1,hours:0,minutes:1,seconds:0,desc:"하루의 시작, 한 잔의 물",autoNext:false},
+      {emoji:"🫖",title:"커피/차 마시기",time:5,hours:0,minutes:5,seconds:0,desc:"따뜻한 한 잔의 여유",autoNext:false},
+      {emoji:"📚",title:"독서",time:30,hours:0,minutes:30,seconds:0,desc:"여유롭게 책 읽기",autoNext:false},
+      {emoji:"🚶",title:"산책",time:20,hours:0,minutes:20,seconds:0,desc:"가볍게 걸어보기",autoNext:false},
+    ]
+  },
+  weekday_morning: {
+    title: "활기찬 출근 준비 루틴",
+    tasks: [
+      {emoji:"💧",title:"물 마시기",time:1,hours:0,minutes:1,seconds:0,desc:"하루의 시작, 한 잔의 물",autoNext:false},
+      {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 씻기",autoNext:false},
+      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+      {emoji:"📋",title:"오늘 일정 확인",time:10,hours:0,minutes:10,seconds:0,desc:"하루 계획 세우기",autoNext:false},
+    ]
+  },
+  weekday_evening: {
+    title: "숙면 준비 루틴",
+    tasks: [
+      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+      {emoji:"🧘",title:"취침 명상",time:12,hours:0,minutes:12,seconds:0,desc:"편안한 잠을 위한 마음 정리",autoNext:false},
+    ]
+  },
+  calm: {
+    title: "평온해지는 루틴",
+    tasks: [
+      {emoji:"🌬️",title:"심호흡하기",time:3,hours:0,minutes:3,seconds:0,desc:"깊게 들이마시고 내쉬기",autoNext:false},
+      {emoji:"🧘",title:"명상",time:10,hours:0,minutes:10,seconds:0,desc:"고요한 마음으로 쉬기",autoNext:false},
+      {emoji:"🫖",title:"자기 전 차 마시기",time:5,hours:0,minutes:5,seconds:0,desc:"따뜻한 차로 몸 녹이기",autoNext:false},
+      {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
+    ]
+  },
+  fresh_morning: {
+    title: "상쾌한 아침 루틴",
+    tasks: [
       {emoji:"🛏️",title:"잠자리 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깔끔한 침대로 기분 전환",autoNext:false},
       {emoji:"🪥",title:"양치질",time:3,hours:0,minutes:3,seconds:0,desc:"상쾌한 아침의 시작",autoNext:false},
-      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
-      {emoji:"🥣",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"천천히 맛있게 먹기",autoNext:false},
+      {emoji:"🍳",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"든든하게 먹기",autoNext:false},
+      {emoji:"📋",title:"오늘 일정 확인",time:10,hours:0,minutes:10,seconds:0,desc:"하루 계획 세우기",autoNext:false},
     ]
   },
-  {
+  evening_wrap: {
     title: "저녁 마무리 루틴",
     tasks: [
-      {emoji:"🌙",title:"오늘 하루 돌아보기",time:5,hours:0,minutes:5,seconds:0,desc:"오늘 어떤 하루였나요?",autoNext:false},
-      {emoji:"🤸",title:"스트레칭",time:5,hours:0,minutes:5,seconds:0,desc:"굳은 몸 풀어주기",autoNext:false},
+      {emoji:"🔍",title:"오늘 하루 돌아보기",time:5,hours:0,minutes:5,seconds:0,desc:"하루를 차분히 되돌아보기",autoNext:false},
+      {emoji:"🤸",title:"스트레칭",time:5,hours:0,minutes:5,seconds:0,desc:"뭉친 몸 풀어주기",autoNext:false},
       {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
-      {emoji:"🧘‍♀️",title:"취침 명상",time:12,hours:0,minutes:12,seconds:0,desc:"편안한 잠을 위한 마음 정리",autoNext:false},
-      {emoji:"📝",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루 기록하기",autoNext:false},
+      {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
     ]
   },
-];
+};
+
+let currentWeather = null;
+let recommendRoutines = [];
+
+function getWeatherEmoji(code) {
+  if ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code)) return "🌧";
+  if ([71,73,75,77,85,86].includes(code)) return "🌨";
+  if ([0,1].includes(code)) return "☀️";
+  if ([2].includes(code)) return "⛅";
+  if ([3].includes(code)) return "☁️";
+  if ([45,48].includes(code)) return "🌫";
+  return "🌤";
+}
+
+function getWeatherLabel(code) {
+  if ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code)) return "비";
+  if ([71,73,75,77,85,86].includes(code)) return "눈";
+  if ([0,1].includes(code)) return "맑음";
+  if ([2].includes(code)) return "구름 조금";
+  if ([3].includes(code)) return "흐림";
+  if ([45,48].includes(code)) return "안개";
+  return "맑음";
+}
+
+function isRainOrSnow(code) {
+  return [51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99].includes(code);
+}
+
+function isClearish(code) {
+  return [0,1,2].includes(code);
+}
+
+function getTimeLabel(hour) {
+  if (hour >= 5 && hour < 12) return "아침";
+  if (hour >= 12 && hour < 17) return "오후";
+  if (hour >= 17 && hour < 22) return "저녁";
+  return "밤";
+}
+
+function pickRecommendRoutines(weatherCode) {
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay();
+  const isWeekend = day === 0 || day === 6;
+  const timeLabel = getTimeLabel(hour);
+
+  const weatherEmoji = getWeatherEmoji(weatherCode);
+  const weatherLabel = getWeatherLabel(weatherCode);
+  const dayLabel = isWeekend ? "주말" : "평일";
+  let pair, contextText;
+
+  if (isRainOrSnow(weatherCode)) {
+    pair = ["rain", "calm"];
+    contextText = `${weatherEmoji} ${weatherLabel} 오는 ${timeLabel} · 실내 루틴 추천`;
+  } else if (isClearish(weatherCode) && isWeekend) {
+    pair = ["outdoor", "weekend_morning"];
+    contextText = `${weatherEmoji} 맑은 ${dayLabel} ${timeLabel} · 야외 루틴 추천`;
+  } else if (!isWeekend && hour >= 5 && hour < 9) {
+    pair = ["weekday_morning", "fresh_morning"];
+    contextText = `${weatherEmoji} ${weatherLabel} · ${dayLabel} ${timeLabel} · 출근 준비 추천`;
+  } else if (!isWeekend && (hour >= 18 || hour < 5)) {
+    pair = ["weekday_evening", "calm"];
+    contextText = `🌙 ${dayLabel} ${timeLabel} · 숙면 루틴 추천`;
+  } else {
+    pair = ["fresh_morning", "evening_wrap"];
+    contextText = `${weatherEmoji} ${weatherLabel} · ${dayLabel} ${timeLabel}`;
+  }
+
+  recommendRoutines = [RECOMMEND_POOL[pair[0]], RECOMMEND_POOL[pair[1]]];
+  const ctxEl = document.getElementById("recommendContext");
+  if (ctxEl) ctxEl.textContent = contextText;
+}
+
+async function fetchWeatherAndRecommend() {
+  let lat = 37.5665;
+  let lon = 126.9780;
+
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {timeout: 5000});
+    });
+    lat = pos.coords.latitude;
+    lon = pos.coords.longitude;
+  } catch(e) {}
+
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+    const data = await res.json();
+    currentWeather = data.current_weather;
+    pickRecommendRoutines(currentWeather.weathercode);
+  } catch(e) {
+    pickRecommendRoutines(0);
+  }
+  renderRecommendSection();
+}
 const CATEGORIES = ["아침","저녁","운동","공부","여유"];
 const DAYS = ["일","월","화","수","목","금","토"];
 const SEC_VALUES = [0,5,10,15,20,25,30,35,40,45,50,55];
@@ -1146,6 +1369,7 @@ function switchTab(tab) {
   if (tab === 'home') renderHome();
   if (tab === 'routine') renderRoutineTab();
   if (tab === 'coach') renderCoach();
+  if (tab === 'insight') renderInsight();
 }
 
 function navigateTo(screen, data) {
@@ -1209,7 +1433,11 @@ function renderHome() {
 // RECOMMEND ROUTINES
 function renderRecommendSection() {
   const sec = document.getElementById("recommendSection");
-  sec.innerHTML = RECOMMEND_ROUTINES.map((rec, i) => {
+  if (!recommendRoutines.length) {
+    sec.innerHTML = "";
+    return;
+  }
+  sec.innerHTML = recommendRoutines.map((rec, i) => {
     const totalMin = rec.tasks.reduce((s,t) => s + t.time, 0);
     const icons = rec.tasks.slice(0,5).map(t => t.emoji).join("");
     return `<div class="recommend-card" style="animation-delay:${i*0.06}s">
@@ -1222,7 +1450,7 @@ function renderRecommendSection() {
   }).join("");
 }
 function addRecommendRoutine(idx) {
-  const rec = RECOMMEND_ROUTINES[idx];
+  const rec = recommendRoutines[idx];
   if (!rec) return;
   const newRoutine = {
     id: genId(), title: rec.title, days: [0,1,2,3,4,5,6], cycle: "매일",
@@ -1285,6 +1513,7 @@ function toggleDetailCheck(rid,ti) {
   detailChecked[rid][ti] = !detailChecked[rid][ti];
   detailChecked._date = today;
   localStorage.setItem("liflow4_checked", JSON.stringify(detailChecked));
+  syncTodayHabits();
   renderDetail();
 }
 function startFromDetail() {
@@ -1927,6 +2156,7 @@ function completeCurrentTask() {
   detailChecked[r.id][playTaskIdx] = true;
   detailChecked._date = today;
   localStorage.setItem("liflow4_checked", JSON.stringify(detailChecked));
+  syncTodayHabits();
 
   if (playTaskIdx < r.tasks.length - 1) {
     playTaskIdx++;
@@ -1981,6 +2211,184 @@ function checkAllRoutinesDone() {
     const checked = detailChecked[r.id] || {};
     return r.tasks.every((_, i) => !!checked[i]);
   });
+}
+
+// HABIT HISTORY
+// Format: { "2025-04-01": ["routineId1", "routineId2"], ... }
+let habitHistory = JSON.parse(localStorage.getItem("liflow4_habit") || "{}");
+function saveHabitHistory() { localStorage.setItem("liflow4_habit", JSON.stringify(habitHistory)); }
+
+function syncTodayHabits() {
+  const todayKey = getTodayKey();
+  const completed = [];
+  routines.forEach(r => {
+    if (r.disabled || !r.tasks.length) return;
+    const checked = detailChecked[r.id] || {};
+    const allDone = r.tasks.every((_, i) => !!checked[i]);
+    if (allDone) completed.push(r.id);
+  });
+  if (completed.length > 0) {
+    habitHistory[todayKey] = completed;
+  } else {
+    delete habitHistory[todayKey];
+  }
+  saveHabitHistory();
+}
+function getTodayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function getMonthKey(year, month) {
+  return year + '-' + String(month+1).padStart(2,'0');
+}
+
+function renderInsight() {
+  const body = document.getElementById('insightBody');
+  const active = routines.filter(r => !r.disabled && r.tasks.length > 0);
+  if (!active.length) {
+    body.innerHTML = '<div class="insight-empty"><div class="insight-empty-text">등록된 루틴이 없어요</div></div>';
+    return;
+  }
+
+  syncTodayHabits();
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const todayDate = now.getDate();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const monthLabel = `${month+1}월`;
+
+  // Calculate stats
+  let totalPossible = 0, totalDone = 0, streak = 0;
+  // Count from day 1 to today
+  for (let d = 1; d <= todayDate; d++) {
+    const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const doneIds = habitHistory[key] || [];
+    totalPossible += active.length;
+    totalDone += active.filter(r => doneIds.includes(r.id)).length;
+  }
+  const pct = totalPossible > 0 ? Math.round(totalDone / totalPossible * 100) : 0;
+
+  // Streak: consecutive days (ending today or yesterday) where ALL active routines done
+  const checkStreakDate = new Date(year, month, todayDate);
+  // Check if today is fully done; if not, start checking from yesterday
+  const todayKey = getTodayKey();
+  const todayDone = habitHistory[todayKey] || [];
+  const todayAllDone = active.every(r => todayDone.includes(r.id));
+  if (!todayAllDone) checkStreakDate.setDate(checkStreakDate.getDate() - 1);
+  while (true) {
+    const k = checkStreakDate.getFullYear() + '-' + String(checkStreakDate.getMonth()+1).padStart(2,'0') + '-' + String(checkStreakDate.getDate()).padStart(2,'0');
+    const ids = habitHistory[k] || [];
+    if (active.every(r => ids.includes(r.id))) {
+      streak++;
+      checkStreakDate.setDate(checkStreakDate.getDate() - 1);
+    } else break;
+  }
+
+  // Total completed routine count this month
+  let totalCompleted = 0;
+  for (let d = 1; d <= todayDate; d++) {
+    const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    totalCompleted += (habitHistory[key] || []).length;
+  }
+
+  // Calendar grid
+  let calHeader = '<th></th>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === todayDate;
+    calHeader += `<th class="${isToday ? 'today-col' : ''}">${d}</th>`;
+  }
+
+  let calRows = '';
+  active.forEach(r => {
+    let row = `<td class="insight-routine-label">${r.title}</td>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const doneIds = habitHistory[key] || [];
+      const isToday = d === todayDate;
+      const isFuture = d > todayDate;
+      let cls = 'undone';
+      if (isFuture) cls = 'future';
+      else if (doneIds.includes(r.id)) cls = 'done';
+      row += `<td class="${isToday ? 'today-col' : ''}"><span class="cal-dot ${cls}"></span></td>`;
+    }
+    calRows += `<tr>${row}</tr>`;
+  });
+
+  // Per-routine cards
+  let cards = '';
+  active.forEach(r => {
+    let rDone = 0;
+    for (let d = 1; d <= todayDate; d++) {
+      const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      if ((habitHistory[key] || []).includes(r.id)) rDone++;
+    }
+    const rPct = todayDate > 0 ? Math.round(rDone / todayDate * 100) : 0;
+    // per-routine streak
+    let rStreak = 0;
+    const sd = new Date(year, month, todayDate);
+    const rTodayKey = getTodayKey();
+    const rTodayDone = (habitHistory[rTodayKey] || []).includes(r.id);
+    if (!rTodayDone) sd.setDate(sd.getDate() - 1);
+    while (true) {
+      const k = sd.getFullYear() + '-' + String(sd.getMonth()+1).padStart(2,'0') + '-' + String(sd.getDate()).padStart(2,'0');
+      if ((habitHistory[k] || []).includes(r.id)) {
+        rStreak++;
+        sd.setDate(sd.getDate() - 1);
+      } else break;
+    }
+    cards += `
+      <div class="insight-card" style="animation: fadeUp 0.35s ease both">
+        <div class="insight-card-top">
+          <span class="insight-card-name">${r.title}</span>
+          <span class="insight-card-pct">${rPct}%</span>
+        </div>
+        <div class="insight-card-streak">${rStreak > 0 ? '🔥 ' + rStreak + '일 연속' : '아직 연속 기록이 없어요'}</div>
+        <div class="insight-progress-bar"><div class="insight-progress-fill" style="width:${rPct}%"></div></div>
+      </div>`;
+  });
+
+  body.innerHTML = `
+    <div class="insight-wrap">
+      <div class="insight-header">
+        <div class="insight-month">${monthLabel}</div>
+        <div class="insight-summary">
+          <div class="insight-stat">
+            <div class="insight-stat-value">${pct}%</div>
+            <div class="insight-stat-label">달성률</div>
+          </div>
+          <div class="insight-stat">
+            <div class="insight-stat-value">${streak > 0 ? '🔥 ' + streak : '-'}</div>
+            <div class="insight-stat-label">연속 달성일</div>
+          </div>
+          <div class="insight-stat">
+            <div class="insight-stat-value">${totalCompleted}</div>
+            <div class="insight-stat-label">완료 횟수</div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-calendar">
+        <div class="insight-calendar-scroll">
+          <table class="insight-cal-table">
+            <thead><tr>${calHeader}</tr></thead>
+            <tbody>${calRows}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="insight-cards-title">루틴별 현황</div>
+      <div class="insight-cards">${cards}</div>
+    </div>`;
+
+  // Scroll calendar to today
+  const scroll = body.querySelector('.insight-calendar-scroll');
+  if (scroll) {
+    const todayTh = scroll.querySelector('th.today-col');
+    if (todayTh) {
+      const offset = todayTh.offsetLeft - scroll.clientWidth / 2 + todayTh.offsetWidth / 2;
+      scroll.scrollLeft = Math.max(0, offset);
+    }
+  }
 }
 
 // UTILS
@@ -2091,93 +2499,135 @@ function updateMoodSubmit() {
   document.getElementById('moodSubmit').disabled = !(selectedMood && selectedEnergy);
 }
 
-const MOOD_MAP = {
-  'good_high': {
-    routine: '활기찬 운동 루틴', msg: '에너지가 넘치는 날이에요! 신나게 발산해봐요 🔥',
-    tasks: [
-      {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"몸을 부드럽게 풀어주기",autoNext:false},
-      {emoji:"🏃",title:"달리기",time:30,hours:0,minutes:30,seconds:0,desc:"신나게 달려봐요",autoNext:false},
-      {emoji:"💪",title:"맨몸운동",time:15,hours:0,minutes:15,seconds:0,desc:"에너지를 발산해봐요",autoNext:false},
-      {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 마무리",autoNext:false},
-    ]
-  },
-  'good_mid': {
-    routine: '집중 공부 루틴', msg: '기분 좋은 날, 한 가지에 집중해봐요 ✨',
-    tasks: [
-      {emoji:"🧹",title:"책상 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깔끔한 환경 만들기",autoNext:false},
-      {emoji:"📖",title:"집중",time:50,hours:0,minutes:50,seconds:0,desc:"한 가지에 몰입하기",autoNext:false},
-      {emoji:"☕",title:"휴식",time:10,hours:0,minutes:10,seconds:0,desc:"잠깐 쉬어가기",autoNext:false},
-      {emoji:"📝",title:"복습",time:30,hours:0,minutes:30,seconds:0,desc:"배운 내용 정리하기",autoNext:false},
-    ]
-  },
-  'good_low': {
-    routine: '여유로운 아침 루틴', msg: '기분 좋게, 천천히 시작해봐요 🌿',
-    tasks: [
-      {emoji:"💧",title:"물 마시기",time:1,hours:0,minutes:1,seconds:0,desc:"하루의 시작, 한 잔의 물",autoNext:false},
-      {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"몸을 부드럽게 풀어주기",autoNext:false},
-      {emoji:"🍳",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"든든하게 먹기",autoNext:false},
-      {emoji:"📚",title:"독서",time:30,hours:0,minutes:30,seconds:0,desc:"좋아하는 책 읽기",autoNext:false},
-    ]
-  },
-  'normal_high': {
-    routine: '생산적인 공부 루틴', msg: '에너지를 알차게 써봐요 💪',
-    tasks: [
-      {emoji:"📋",title:"공부 일정 짜기",time:1,hours:0,minutes:1,seconds:0,desc:"오늘 할 공부 정리",autoNext:false},
-      {emoji:"📖",title:"집중",time:50,hours:0,minutes:50,seconds:0,desc:"깊이 몰입하기",autoNext:false},
-      {emoji:"☕",title:"휴식",time:10,hours:0,minutes:10,seconds:0,desc:"머리 식히기",autoNext:false},
-      {emoji:"📝",title:"예습",time:30,hours:0,minutes:30,seconds:0,desc:"다음 내용 미리 보기",autoNext:false},
-    ]
-  },
-  'normal_mid': {
-    routine: '상쾌한 아침 루틴', msg: '오늘 하루 차근차근 시작해봐요 ☀️',
-    tasks: [
-      {emoji:"🛏️",title:"잠자리 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깔끔한 침대로 기분 전환",autoNext:false},
-      {emoji:"🪥",title:"양치질",time:3,hours:0,minutes:3,seconds:0,desc:"상쾌한 아침의 시작",autoNext:false},
-      {emoji:"🍳",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"든든하게 먹기",autoNext:false},
-      {emoji:"📋",title:"오늘 일정 확인",time:10,hours:0,minutes:10,seconds:0,desc:"하루 계획 세우기",autoNext:false},
-    ]
-  },
-  'normal_low': {
-    routine: '저녁 마무리 루틴', msg: '오늘 하루도 수고했어요 🌙',
-    tasks: [
-      {emoji:"🔍",title:"오늘 하루 돌아보기",time:5,hours:0,minutes:5,seconds:0,desc:"하루를 차분히 되돌아보기",autoNext:false},
-      {emoji:"🤸",title:"스트레칭",time:5,hours:0,minutes:5,seconds:0,desc:"뭉친 몸 풀어주기",autoNext:false},
-      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
-      {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
-    ]
-  },
-  'tired_high': {
-    routine: '가벼운 운동 루틴', msg: '몸은 피곤해도 살짝 움직여봐요 🚶',
-    tasks: [
-      {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"뭉친 몸 풀어주기",autoNext:false},
-      {emoji:"🚶",title:"산책",time:20,hours:0,minutes:20,seconds:0,desc:"가볍게 걸어보기",autoNext:false},
-      {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 씻기",autoNext:false},
-      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
-    ]
-  },
-  'tired_mid': {
-    routine: '평온해지는 루틴', msg: '오늘은 나를 위한 시간이에요 🍵',
-    tasks: [
-      {emoji:"🌬️",title:"심호흡하기",time:3,hours:0,minutes:3,seconds:0,desc:"깊게 들이마시고 내쉬기",autoNext:false},
-      {emoji:"🧘",title:"명상",time:10,hours:0,minutes:10,seconds:0,desc:"고요한 마음으로 쉬기",autoNext:false},
-      {emoji:"🫖",title:"자기 전 차 마시기",time:5,hours:0,minutes:5,seconds:0,desc:"따뜻한 차로 몸 녹이기",autoNext:false},
-      {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
-    ]
-  },
-  'tired_low': {
-    routine: '회복 루틴', msg: '아무것도 안 해도 괜찮아요. 푹 쉬어요 💙',
-    tasks: [
-      {emoji:"😌",title:"아무것도 안 하기",time:30,hours:0,minutes:30,seconds:0,desc:"그냥 편하게 쉬기",autoNext:false},
-      {emoji:"🧘",title:"취침 명상",time:12,hours:0,minutes:12,seconds:0,desc:"고요한 마음으로 잠 준비",autoNext:false},
-      {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
-      {emoji:"📋",title:"내일 일정 확인",time:5,hours:0,minutes:5,seconds:0,desc:"내일을 미리 준비하기",autoNext:false},
-    ]
-  },
+// 코치/기분 추천용 태스크 템플릿
+const _CT = {
+  active_workout: [
+    {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"몸을 부드럽게 풀어주기",autoNext:false},
+    {emoji:"🏃",title:"달리기",time:30,hours:0,minutes:30,seconds:0,desc:"신나게 달려봐요",autoNext:false},
+    {emoji:"💪",title:"맨몸운동",time:15,hours:0,minutes:15,seconds:0,desc:"에너지를 발산해봐요",autoNext:false},
+    {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 마무리",autoNext:false},
+  ],
+  evening_activity: [
+    {emoji:"🚶",title:"산책",time:30,hours:0,minutes:30,seconds:0,desc:"저녁 바람 맞으며 걷기",autoNext:false},
+    {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"몸을 부드럽게 풀어주기",autoNext:false},
+    {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 마무리",autoNext:false},
+    {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
+  ],
+  focus_study: [
+    {emoji:"🧹",title:"책상 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깔끔한 환경 만들기",autoNext:false},
+    {emoji:"📖",title:"집중",time:50,hours:0,minutes:50,seconds:0,desc:"한 가지에 몰입하기",autoNext:false},
+    {emoji:"☕",title:"휴식",time:10,hours:0,minutes:10,seconds:0,desc:"잠깐 쉬어가기",autoNext:false},
+    {emoji:"📝",title:"복습",time:30,hours:0,minutes:30,seconds:0,desc:"배운 내용 정리하기",autoNext:false},
+  ],
+  fresh_morning: [
+    {emoji:"🛏️",title:"잠자리 정리",time:1,hours:0,minutes:1,seconds:0,desc:"깔끔한 침대로 기분 전환",autoNext:false},
+    {emoji:"🪥",title:"양치질",time:3,hours:0,minutes:3,seconds:0,desc:"상쾌한 아침의 시작",autoNext:false},
+    {emoji:"🍳",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"든든하게 먹기",autoNext:false},
+    {emoji:"📋",title:"오늘 일정 확인",time:10,hours:0,minutes:10,seconds:0,desc:"하루 계획 세우기",autoNext:false},
+  ],
+  evening_wrap: [
+    {emoji:"🔍",title:"오늘 하루 돌아보기",time:5,hours:0,minutes:5,seconds:0,desc:"하루를 차분히 되돌아보기",autoNext:false},
+    {emoji:"🤸",title:"스트레칭",time:5,hours:0,minutes:5,seconds:0,desc:"뭉친 몸 풀어주기",autoNext:false},
+    {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+    {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
+  ],
+  leisurely_morning: [
+    {emoji:"💧",title:"물 마시기",time:1,hours:0,minutes:1,seconds:0,desc:"하루의 시작, 한 잔의 물",autoNext:false},
+    {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"몸을 부드럽게 풀어주기",autoNext:false},
+    {emoji:"🍳",title:"아침 식사",time:15,hours:0,minutes:15,seconds:0,desc:"든든하게 먹기",autoNext:false},
+    {emoji:"📚",title:"독서",time:30,hours:0,minutes:30,seconds:0,desc:"좋아하는 책 읽기",autoNext:false},
+  ],
+  calm: [
+    {emoji:"🌬️",title:"심호흡하기",time:3,hours:0,minutes:3,seconds:0,desc:"깊게 들이마시고 내쉬기",autoNext:false},
+    {emoji:"🧘",title:"명상",time:10,hours:0,minutes:10,seconds:0,desc:"고요한 마음으로 쉬기",autoNext:false},
+    {emoji:"🫖",title:"자기 전 차 마시기",time:5,hours:0,minutes:5,seconds:0,desc:"따뜻한 차로 몸 녹이기",autoNext:false},
+    {emoji:"📓",title:"일기",time:10,hours:0,minutes:10,seconds:0,desc:"오늘 하루를 기록하기",autoNext:false},
+  ],
+  sleep_prep: [
+    {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+    {emoji:"🧘",title:"취침 명상",time:12,hours:0,minutes:12,seconds:0,desc:"편안한 잠을 위한 마음 정리",autoNext:false},
+  ],
+  productive_study: [
+    {emoji:"📋",title:"공부 일정 짜기",time:1,hours:0,minutes:1,seconds:0,desc:"오늘 할 공부 정리",autoNext:false},
+    {emoji:"📖",title:"집중",time:50,hours:0,minutes:50,seconds:0,desc:"깊이 몰입하기",autoNext:false},
+    {emoji:"☕",title:"휴식",time:10,hours:0,minutes:10,seconds:0,desc:"머리 식히기",autoNext:false},
+    {emoji:"📝",title:"예습",time:30,hours:0,minutes:30,seconds:0,desc:"다음 내용 미리 보기",autoNext:false},
+  ],
+  light_exercise: [
+    {emoji:"🤸",title:"스트레칭",time:10,hours:0,minutes:10,seconds:0,desc:"뭉친 몸 풀어주기",autoNext:false},
+    {emoji:"🚶",title:"산책",time:20,hours:0,minutes:20,seconds:0,desc:"가볍게 걸어보기",autoNext:false},
+    {emoji:"🚿",title:"샤워",time:15,hours:0,minutes:15,seconds:0,desc:"개운하게 씻기",autoNext:false},
+    {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+  ],
+  recovery: [
+    {emoji:"😌",title:"아무것도 안 하기",time:30,hours:0,minutes:30,seconds:0,desc:"그냥 편하게 쉬기",autoNext:false},
+    {emoji:"🧘",title:"취침 명상",time:12,hours:0,minutes:12,seconds:0,desc:"고요한 마음으로 잠 준비",autoNext:false},
+    {emoji:"🧴",title:"스킨케어",time:3,hours:0,minutes:3,seconds:0,desc:"피부에 수분 충전",autoNext:false},
+    {emoji:"📋",title:"내일 일정 확인",time:5,hours:0,minutes:5,seconds:0,desc:"내일을 미리 준비하기",autoNext:false},
+  ],
 };
+
+const MOOD_MAP = {
+  // 좋음 + 높음
+  'good_high_morning':   {routine:'활기찬 운동 루틴', msg:'에너지 넘치는 아침! 신나게 발산해봐요 🔥', tasks:_CT.active_workout},
+  'good_high_afternoon': {routine:'저녁 활동 루틴', msg:'오늘 하루 마무리도 활기차게! 💪', tasks:_CT.evening_activity},
+  'good_high_night':     {routine:'집중 공부 루틴', msg:'에너지가 남아있네요, 알차게 써봐요 ✨', tasks:_CT.focus_study},
+  // 좋음 + 보통
+  'good_mid_morning':   {routine:'상쾌한 아침 루틴', msg:'기분 좋은 아침, 차근차근 시작해봐요 ☀️', tasks:_CT.fresh_morning},
+  'good_mid_afternoon': {routine:'집중 공부 루틴', msg:'기분 좋은 오후, 한 가지에 집중해봐요 ✨', tasks:_CT.focus_study},
+  'good_mid_night':     {routine:'저녁 마무리 루틴', msg:'기분 좋게 하루 마무리해봐요 🌙', tasks:_CT.evening_wrap},
+  // 좋음 + 낮음
+  'good_low_morning':   {routine:'여유로운 아침 루틴', msg:'천천히 여유롭게 시작해봐요 🌿', tasks:_CT.leisurely_morning},
+  'good_low_afternoon': {routine:'평온해지는 루틴', msg:'좋은 기분 그대로 쉬어가도 좋아요 🍵', tasks:_CT.calm},
+  'good_low_night':     {routine:'숙면 준비 루틴', msg:'기분 좋게 잠자리에 들어봐요 🌙', tasks:_CT.sleep_prep},
+  // 보통 + 높음
+  'normal_high_morning':   {routine:'생산적인 공부 루틴', msg:'에너지를 알차게 써봐요 💪', tasks:_CT.productive_study},
+  'normal_high_afternoon': {routine:'가벼운 운동 루틴', msg:'적당히 움직이며 기분 전환해봐요 🏃', tasks:_CT.light_exercise},
+  'normal_high_night':     {routine:'집중 공부 루틴', msg:'에너지가 남아있네요, 집중해봐요 📖', tasks:_CT.focus_study},
+  // 보통 + 보통
+  'normal_mid_morning':   {routine:'상쾌한 아침 루틴', msg:'오늘 하루 차근차근 시작해봐요 ☀️', tasks:_CT.fresh_morning},
+  'normal_mid_afternoon': {routine:'저녁 마무리 루틴', msg:'오늘도 잘 보내고 있어요 🌤️', tasks:_CT.evening_wrap},
+  'normal_mid_night':     {routine:'저녁 마무리 루틴', msg:'오늘 하루도 수고했어요 🌙', tasks:_CT.evening_wrap},
+  // 보통 + 낮음
+  'normal_low_morning':   {routine:'여유로운 아침 루틴', msg:'천천히 시작해도 괜찮아요 🌿', tasks:_CT.leisurely_morning},
+  'normal_low_afternoon': {routine:'평온해지는 루틴', msg:'무리하지 말고 쉬어가요 🍵', tasks:_CT.calm},
+  'normal_low_night':     {routine:'숙면 준비 루틴', msg:'오늘 하루 수고했어요, 푹 자요 😴', tasks:_CT.sleep_prep},
+  // 피곤함 + 높음
+  'tired_high_morning':   {routine:'가벼운 운동 루틴', msg:'몸은 피곤해도 살짝 움직여봐요 🚶', tasks:_CT.light_exercise},
+  'tired_high_afternoon': {routine:'저녁 마무리 루틴', msg:'몸은 피곤해도 마음은 괜찮아요 🌸', tasks:_CT.evening_wrap},
+  'tired_high_night':     {routine:'숙면 준비 루틴', msg:'오늘 정말 수고했어요, 쉬어요 💙', tasks:_CT.sleep_prep},
+  // 피곤함 + 보통
+  'tired_mid_morning':   {routine:'여유로운 아침 루틴', msg:'오늘은 천천히 시작해도 돼요 🌿', tasks:_CT.leisurely_morning},
+  'tired_mid_afternoon': {routine:'평온해지는 루틴', msg:'오늘은 푹 쉬어도 괜찮아요 💙', tasks:_CT.calm},
+  'tired_mid_night':     {routine:'숙면 준비 루틴', msg:'몸이 보내는 신호예요, 푹 자요 😴', tasks:_CT.sleep_prep},
+  // 피곤함 + 낮음
+  'tired_low_morning':   {routine:'여유로운 아침 루틴', msg:'억지로 하지 않아도 돼요, 천천히 🌿', tasks:_CT.leisurely_morning},
+  'tired_low_afternoon': {routine:'회복 루틴', msg:'아무것도 안 해도 괜찮은 날이에요 🌙', tasks:_CT.recovery},
+  'tired_low_night':     {routine:'회복 루틴', msg:'오늘은 그냥 쉬어요, 정말 수고했어요 💙', tasks:_CT.recovery},
+};
+
+function getCoachTimePeriod() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 10) return {key:'morning', label:'아침', emoji:'🌅'};
+  if (h >= 10 && h < 12) return {key:'morning', label:'오전', emoji:'☀️'};
+  if (h >= 12 && h < 18) return {key:'afternoon', label:'오후', emoji:'☀️'};
+  if (h >= 18 && h < 22) return {key:'afternoon', label:'저녁', emoji:'🌆'};
+  return {key:'night', label:'밤', emoji:'🌙'};
+}
+
+function getCoachTimeGreeting() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 10) return '🌅 좋은 아침이에요';
+  if (h >= 10 && h < 12) return '☀️ 좋은 오전이에요';
+  if (h >= 12 && h < 18) return '☀️ 오후예요';
+  if (h >= 18 && h < 22) return '🌆 저녁이에요';
+  return '🌙 늦은 밤이에요';
+}
 
 function submitMoodRecommend() {
   if (!selectedMood || !selectedEnergy) return;
-  const key = selectedMood + '_' + selectedEnergy;
+  const tp = getCoachTimePeriod();
+  const key = selectedMood + '_' + selectedEnergy + '_' + tp.key;
   const result = MOOD_MAP[key];
   if (!result) return;
 
@@ -2274,11 +2724,8 @@ function renderCoach() {
   coachEnergy = null;
   const body = document.getElementById("coachBody");
   body.innerHTML = `
-    <div style="position:relative;display:inline-block;">
-      <img class="coach-character" src="character.png" alt="" onerror="this.style.display='none'">
-    </div>
     <div class="coach-title">오늘 기분이 어때요?</div>
-    <div class="coach-sub">기분과 에너지에 맞는 루틴을 추천해 드릴게요</div>
+    <div class="coach-sub">${getCoachTimeGreeting()}</div>
     <div class="coach-section">
       <div class="coach-section-label">기분</div>
       <div class="coach-options">
@@ -2316,10 +2763,12 @@ function updateCoachSubmit() {
 let coachResultKey = null;
 function submitCoachRecommend() {
   if (!coachMood || !coachEnergy) return;
-  const key = coachMood + '_' + coachEnergy;
-  const result = MOOD_MAP[key];
+  const tp = getCoachTimePeriod();
+  const timeKey = coachMood + '_' + coachEnergy + '_' + tp.key;
+  const baseKey = coachMood + '_' + coachEnergy;
+  const result = MOOD_MAP[timeKey] || MOOD_MAP[baseKey];
   if (!result) return;
-  coachResultKey = key;
+  coachResultKey = MOOD_MAP[timeKey] ? timeKey : baseKey;
   document.getElementById('coachSubmit').style.display = 'none';
   document.getElementById('coachResult').innerHTML = `<div class="coach-result">
     <div class="coach-result-title">${result.routine}</div>
@@ -2360,6 +2809,7 @@ function startCoachRoutine() {
 
 // INIT
 document.getElementById('detailBottomBar').style.display = 'none';
+fetchWeatherAndRecommend();
 switchTab('home');
 
 // PWA Service Worker
